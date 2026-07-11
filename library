@@ -8,6 +8,7 @@ local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 local ContentProvider = game:GetService("ContentProvider")
+local RunService = game:GetService("RunService")
 
 local Nexo = {}
 Nexo.__index = Nexo
@@ -107,7 +108,9 @@ local function LoadLucide()
 		return Lucide
 	end
 
-	local module = Workspace:FindFirstChild("LucideRoblox") or loadstring(game:HttpGet'https://raw.githubusercontent.com/yriri842/UILibrary/refs/heads/main/lucide.lua')
+	-- local module = Workspace:FindFirstChild("LucideRoblox") or loadstring(game:HttpGet'https://raw.githubusercontent.com/yriri842/UILibrary/refs/heads/main/lucide.lua')
+	local module
+	if RunService:IsStudio() then module = Workspace:FindFirstChild("LucideRoblox") else module = loadstring(game:HttpGet'https://raw.githubusercontent.com/yriri842/UILibrary/refs/heads/main/lucide.lua') end
 	if module then
 		local ok, result = pcall(require, module)
 		if ok and type(result) == "table" then
