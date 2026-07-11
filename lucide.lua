@@ -10,8 +10,10 @@ export type Asset = {
 	ImageRectSize: Vector2, -- Vector2.new(0, 0)
 	ImageRectOffset: Vector2, -- Vector2.new(0, 0)
 }
-local Icons = loadstring(game:HttpGet'https://raw.githubusercontent.com/yriri842/UILibrary/refs/heads/main/icons.lua')
-return Icons
+local IconsChunk = loadstring(game:HttpGet('https://raw.githubusercontent.com/yriri842/UILibrary/refs/heads/main/icons.lua'))
+assert(IconsChunk, "[LucideRoblox] Failed to loadstring icons.lua")
+local Icons = IconsChunk()
+assert(type(Icons) == "table", "[LucideRoblox] icons.lua did not return a table")
 
 local Type = typeof or type
 local function CheckArgTypes(funcName: string, inputArgs: {any}, typeEntries: {[number]: {string}})
