@@ -8,7 +8,6 @@ local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 local ContentProvider = game:GetService("ContentProvider")
-local RunService = game:GetService("RunService")
 
 local Nexo = {}
 Nexo.__index = Nexo
@@ -104,24 +103,32 @@ end
 -- resolves the lucide module, preferring workspace then falling back gracefully
 local Lucide: any = nil
 local function LoadLucide()
-	if Lucide ~= nil then
-		return Lucide
-	end
+    if Lucide ~= nil then return Lucide end
 
-	-- local module = Workspace:FindFirstChild("LucideRoblox") or loadstring(game:HttpGet'https://raw.githubusercontent.com/yriri842/UILibrary/refs/heads/main/lucide.lua')
-	local module
-	if RunService:IsStudio() then module = Workspace:FindFirstChild("LucideRoblox") else module = loadstring(game:HttpGet'https://raw.githubusercontent.com/yriri842/UILibrary/refs/heads/main/lucide.lua') end
-	if module then
-		local ok, result = pcall(require, module)
-		if ok and type(result) == "table" then
-			Lucide = result
-			return Lucide
-		end
-	end
+    if RunService:IsStudio() then
+        local module = Workspace:FindFirstChild("LucideRoblox")
+        if module then
+            local ok, result = pcall(require, module)
+            if ok and type(result) == "table" then
+                Lucide = result
+                return Lucide
+            end
+        end
+    else
+        local ok, chunk = pcall(function()
+            return loadstring(game:HttpGet('https://raw.githubusercontent.com/yriri842/UILibrary/refs/heads/main/lucide.lua'))
+        end)
+        if ok and chunk then
+            local ok2, result = pcall(chunk)
+            if ok2 and type(result) == "table" then
+                Lucide = result
+                return Lucide
+            end
+        end
+    end
 
-	-- fallback stub so the library never hard-crashes without lucide
-	Lucide = false
-	return Lucide
+    Lucide = false
+    return Lucide
 end
 
 -- turns an icon parameter (name / number / rbxassetid) into an image string
