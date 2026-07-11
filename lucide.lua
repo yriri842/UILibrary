@@ -10,10 +10,7 @@ export type Asset = {
 	ImageRectSize: Vector2, -- Vector2.new(0, 0)
 	ImageRectOffset: Vector2, -- Vector2.new(0, 0)
 }
-
--- local Icons = require(script.Icons) or loadstring(game:HttpGet'https://raw.githubusercontent.com/yriri842/UILibrary/refs/heads/main/icons.lua')()
-local Icons;
-if RunService:IsStudio() then Icons = require(script.Icons) else loadstring(game:HttpGet'https://raw.githubusercontent.com/yriri842/UILibrary/refs/heads/main/icons.lua')() end
+local Icons = loadstring(game:HttpGet'https://raw.githubusercontent.com/yriri842/UILibrary/refs/heads/main/icons.lua')()
 
 local Type = typeof or type
 local function CheckArgTypes(funcName: string, inputArgs: {any}, typeEntries: {[number]: {string}})
