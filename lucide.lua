@@ -1,5 +1,8 @@
 -- ImageRectSize and ImageRectOffset will always return 0, this is because all icons have their own asset ID, Asphalt did this not me.
 -- The only reason the two arguments still exist is for backwards compatibility support with lucide-roblox.
+
+local RunService = game:GetService("RunService")
+
 export type Asset = {
 	IconName: string, -- "icon-name"
 	Id: number, -- 123456789
@@ -8,7 +11,9 @@ export type Asset = {
 	ImageRectOffset: Vector2, -- Vector2.new(0, 0)
 }
 
-local Icons = require(script.Icons) or loadstring(game:HttpGet'https://raw.githubusercontent.com/yriri842/UILibrary/refs/heads/main/icons.lua')()
+-- local Icons = require(script.Icons) or loadstring(game:HttpGet'https://raw.githubusercontent.com/yriri842/UILibrary/refs/heads/main/icons.lua')()
+local Icons;
+if RunService:IsStudio() then Icons = require(script.Icons) else loadstring(game:HttpGet'https://raw.githubusercontent.com/yriri842/UILibrary/refs/heads/main/icons.lua')() end
 
 local Type = typeof or type
 local function CheckArgTypes(funcName: string, inputArgs: {any}, typeEntries: {[number]: {string}})
