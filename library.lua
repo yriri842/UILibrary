@@ -9,24 +9,31 @@ local Nexo = {}
 Nexo.__index = Nexo
 
 local DefaultTheme = {
-	Accent = Color3.fromRGB(29, 132, 144),
-	WindowBackground = Color3.fromRGB(24, 42, 47),
-	TabBackground = Color3.fromRGB(25, 45, 50),
-	CategoryBackground = Color3.fromRGB(35, 63, 70),
-	CategoryTopBar = Color3.fromRGB(43, 77, 86),
-	NavigationBackground = Color3.fromRGB(24, 42, 47),
-	NavButtonBackground = Color3.fromRGB(36, 65, 70),
-	Stroke = Color3.fromRGB(255, 255, 255),
-	MainStroke = Color3.fromRGB(170, 170, 170),
-	TitleText = Color3.fromRGB(230, 230, 255),
-	PrimaryText = Color3.fromRGB(254, 254, 254),
-	SecondaryText = Color3.fromRGB(180, 180, 180),
-	NavText = Color3.fromRGB(210, 210, 210),
-	ToggleKnob = Color3.fromRGB(190, 190, 190),
-	ToggleActive = Color3.fromRGB(59, 108, 120),
-	GradientTop = Color3.fromRGB(31, 54, 60),
-	GradientBottom = Color3.fromRGB(20, 35, 38),
-	SliderFill = Color3.fromRGB(75, 137, 148),
+    Accent = Color3.fromRGB(29, 132, 144),
+    WindowBackground = Color3.fromRGB(24, 42, 47),
+    TabBackground = Color3.fromRGB(25, 45, 50),
+    CategoryBackground = Color3.fromRGB(35, 63, 70),
+    CategoryTopBar = Color3.fromRGB(43, 77, 86),
+    NavigationBackground = Color3.fromRGB(24, 42, 47),
+    NavButtonBackground = Color3.fromRGB(36, 65, 70),
+    Stroke = Color3.fromRGB(255, 255, 255),
+    MainStroke = Color3.fromRGB(170, 170, 170),
+    TitleText = Color3.fromRGB(230, 230, 255),
+    PrimaryText = Color3.fromRGB(254, 254, 254),
+    SecondaryText = Color3.fromRGB(180, 180, 180),
+    NavText = Color3.fromRGB(210, 210, 210),
+    ToggleKnob = Color3.fromRGB(190, 190, 190),
+    ToggleKnobActive = Color3.fromRGB(235, 235, 235),
+    ToggleActive = Color3.fromRGB(59, 108, 120),
+    GradientTop = Color3.fromRGB(31, 54, 60),
+    GradientBottom = Color3.fromRGB(20, 35, 38),
+    SliderFill = Color3.fromRGB(75, 137, 148),
+    SliderEmpty = Color3.fromRGB(34, 62, 67),
+    HolderColor = Color3.fromRGB(255, 255, 255),
+    HolderTransparency = 0.8,
+    HoverColor = Color3.fromRGB(255, 255, 255),
+    HoverTransparency = 0.91,
+    PickerBackground = Color3.fromRGB(32, 55, 61),
 }
 
 -- tweens
@@ -1007,6 +1014,12 @@ function Window:SetThemePreset(presetName: string)
 
     for key, value in pairs(preset) do
         self._theme[key] = value
+    end
+
+    for key, value in pairs(DefaultTheme) do
+        if self._theme[key] == nil then
+            self._theme[key] = value
+        end
     end
 
     if preset.Accent then
@@ -3753,12 +3766,18 @@ function Nexo.CreateWindow(config: {
 	
 	
 
-	local theme = table.clone(DefaultTheme)
-	if config.Theme then
-		for k, v in pairs(config.Theme) do
-			theme[k] = v
-		end
-	end
+	    local theme = table.clone(DefaultTheme)
+    if config.Theme then
+        for k, v in pairs(config.Theme) do
+            theme[k] = v
+        end
+    end
+
+    for k, v in pairs(DefaultTheme) do
+        if theme[k] == nil then
+            theme[k] = v
+        end
+    end
 
 	local self_win = setmetatable({}, Window)
 	self_win._theme = theme
