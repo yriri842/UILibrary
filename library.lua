@@ -2569,7 +2569,21 @@ function Category:AddSlider(config: {
     end
 
     setValue(config.Default or minValue, true, false)
-
+	
+	if config.Watch then
+        local watchConn = RunService.Heartbeat:Connect(function()
+            if dragging then return end
+            local ok, current = pcall(config.Watch)
+            if ok and type(current) == "number" then
+                local snapped = snap(current)
+                if snapped ~= value then
+                    setValue(snapped, true, true)
+                end
+            end
+        end)
+        table.insert(connections, watchConn)
+    end
+	
     return self:_register(api)
 end
 
