@@ -1,7 +1,3 @@
---!strict
--- nexo ui library
--- part 1: core (create, theme, lucide, window, tab, category skeleton)
-
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -12,7 +8,6 @@ local ContentProvider = game:GetService("ContentProvider")
 local Nexo = {}
 Nexo.__index = Nexo
 
--- default theme values (matches the converted design)
 local DefaultTheme = {
 	Accent = Color3.fromRGB(29, 132, 144),
 	WindowBackground = Color3.fromRGB(24, 42, 47),
@@ -34,7 +29,7 @@ local DefaultTheme = {
 	SliderFill = Color3.fromRGB(75, 137, 148),
 }
 
--- tween presets
+-- tweens
 local FAST = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 local MEDIUM = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
@@ -75,7 +70,7 @@ local function Create(className: string, props: {[string]: any}?): Instance
 	return instance
 end
 
--- applies 4 corner radii while staying safe on older clients
+-- 4 corner radius
 local function ApplyCorner(parent: Instance, radius: number, tl: number?, tr: number?, br: number?, bl: number?)
 	local corner = Create("UICorner", {
 		CornerRadius = UDim.new(0, radius),
@@ -164,17 +159,24 @@ local function ResolveIcon(icon: (string | number)?): string
 	return ""
 end
 
--- picks a safe parent gui (playergui on client, coregui fallback in studio edit)
 local function GetGuiParent(): Instance
-	local player = Players.LocalPlayer
-	if player then
-		local pg = player:FindFirstChildOfClass("PlayerGui")
-		if pg then
-			return pg
-		end
-		return player:WaitForChild("PlayerGui")
-	end
-	return game:GetService("CoreGui")
+    local ok, hui = pcall(function()
+        return gethui()
+    end)
+    if ok and typeof(hui) == "Instance" then
+        return hui
+    end
+
+    local player = Players.LocalPlayer
+    if player then
+        local pg = player:FindFirstChildOfClass("PlayerGui")
+        if pg then
+            return pg
+        end
+        return player:WaitForChild("PlayerGui")
+    end
+
+    return game:GetService("CoreGui")
 end
 
 -- ========================================================================
@@ -262,27 +264,22 @@ function Category:_register(api: any)
 end
 
 function Category:_recalcHeight()
-	if self._collapsed or not self._visible then
-		return
-	end
+    if self._collapsed or not self._visible then
+        return
+    end
 
-	local contentHeight = self.ListLayout.AbsoluteContentSize.Y
-	local targetHeight = 25 + 4 + contentHeight + 6
+    local contentHeight = self.ListLayout.AbsoluteContentSize.Y
+    local targetHeight = 39 + contentHeight
 
-	if self._heightTween then
-		self._heightTween:Cancel()
-		self._heightTween = nil
-	end
+    if self._heightTween then
+        self._heightTween:Cancel()
+        self._heightTween = nil
+    end
 
-	self._heightTween = TweenService:Create(
-		self.Root,
-		FAST,
-		{
-			Size = UDim2.new(1, 0, 0, targetHeight),
-		}
-	)
-
-	self._heightTween:Play()
+    self._heightTween = TweenService:Create(self.Root, FAST, {
+        Size = UDim2.new(1, 0, 0, targetHeight),
+    })
+    self._heightTween:Play()
 end
 
 function Category:SetTitle(text: string)
@@ -837,11 +834,16 @@ function Window:SetAccent(color: Color3)
 	end
 
 	self._accentObjects = self._accentObjects or {}
-	for _, entry in ipairs(self._accentObjects) do
-		if entry.inst and entry.inst.Parent then
-			pcall(entry.apply, color)
-		end
-	end
+    local validEntries = {}
+
+    for _, entry in ipairs(self._accentObjects) do
+        if entry.inst and entry.inst.Parent then
+            pcall(entry.apply, color)
+            table.insert(validEntries, entry)
+        end
+    end
+
+    self._accentObjects = validEntries
 
 	self:ApplyTheme()
 end
@@ -876,6 +878,8 @@ local ThemePresets = {
 		GradientTop = Color3.fromRGB(31, 54, 60),
 		GradientBottom = Color3.fromRGB(20, 35, 38),
 		SliderFill = Color3.fromRGB(75, 137, 148),
+		HolderTransparency = 0.8,
+		HolderColor = Color3.fromRGB(255, 255, 255),
 	},
 
 	Light = {
@@ -900,6 +904,8 @@ local ThemePresets = {
 		GradientTop = Color3.fromRGB(225, 230, 235),
 		GradientBottom = Color3.fromRGB(205, 212, 220),
 		SliderFill = Color3.fromRGB(80, 150, 165),
+		HolderTransparency = 0.35,
+		HolderColor = Color3.fromRGB(200, 200, 200),
 	},
 }
 
@@ -929,18 +935,20 @@ function Window:SetThemeColor(key: string, color: Color3)
 end
 
 function Window:_updateNav()
-	local inactiveColor = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(61, 117, 150)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255)),
-	})
-	local hoverColor = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(89, 172, 220)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255)),
-	})
-	local activeColor = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(103, 197, 255)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255)),
-	})
+	local accent = self._theme.Accent
+    local h, s, v = accent:ToHSV()
+	local inactiveColor = ColorSequence.new(
+        Color3.fromHSV(h, s * 0.5, math.clamp(v * 0.75, 0, 1)),
+        Color3.new(1, 1, 1)
+    )
+    local hoverColor = ColorSequence.new(
+        Color3.fromHSV(h, s * 0.7, math.clamp(v * 1.15, 0, 1)),
+        Color3.new(1, 1, 1)
+    )
+    local activeColor = ColorSequence.new(
+        Color3.fromHSV(h, math.clamp(s * 0.85, 0, 1), 1),
+        Color3.new(1, 1, 1)
+    )
 	local gradientTransparency = NumberSequence.new({
 		NumberSequenceKeypoint.new(0, 0),
 		NumberSequenceKeypoint.new(1, 0),
@@ -1208,6 +1216,7 @@ end
 
 function Window:UnloadGui()
 	self.ScreenGui:Destroy()
+	if self._notifyGui then self._notifyGui:Destroy() end
 end
 
 function Window:SetTitle(text: string)
@@ -1224,6 +1233,8 @@ local function BuildHolder(window, parent: Instance, theme, height: number, with
 		Size = UDim2.new(1, 0, 0, height),
 		Parent = parent,
 	})
+	window:_track(holder, "BackgroundColor3", "HolderColor")
+	window:_track(holder, "BackgroundTransparency", "HolderTransparency")
 
 	ApplyCorner(holder, 4)
 
@@ -1400,8 +1411,10 @@ function Window:AttachTooltip(guiObject: GuiObject, text: string)
 	end
 
 	guiObject.MouseEnter:Connect(function()
-		hovering = true
-		fadeIn()
+    	hovering = true
+    	local mouse = UserInputService:GetMouseLocation()
+    	tip.Position = UDim2.fromOffset(mouse.X + 14, mouse.Y + 2)
+    	fadeIn()
 	end)
 	guiObject.MouseLeave:Connect(function()
 		hovering = false
@@ -2308,7 +2321,6 @@ function Category:AddKeybind(config: {
 	function api:SetTitle(t: string) titleLabel.Text = t end
 	function api:SetDescription(d: string) descLabel.Text = d end
 	function api:SetVisible(v: boolean) holder.Visible = v end
-	function api:Destroy() holder:Destroy() end
 	api._holder = holder
 	api._searchTitle = config.Title or "Keybind"
 
@@ -2317,7 +2329,7 @@ function Category:AddKeybind(config: {
 		updateVisual()
 	end)
 
-	UserInputService.InputBegan:Connect(function(input, processed)
+	local inputConn = UserInputService.InputBegan:Connect(function(input, processed)
 		if listening then
 			if input.UserInputType == Enum.UserInputType.Keyboard then
 				listening = false
@@ -2333,6 +2345,11 @@ function Category:AddKeybind(config: {
 			end
 		end
 	end)
+
+	function api:Destroy()
+        inputConn:Disconnect()
+        holder:Destroy()
+    end
 
 	if config.Tooltip then
 		self._window:AttachTooltip(holder, config.Tooltip)
@@ -3369,220 +3386,191 @@ end
 -- ========================================================================
 
 function Window:Notify(config: {
-	Title: string?,
-	Content: string?,
-	Icon: (string | number)?,
-	Duration: number?,
-	Callback: (() -> ())?,
-	})
-	config = config or {}
-	local theme = self._theme
+    Title: string?,
+    Content: string?,
+    Icon: (string | number)?,
+    Duration: number?,
+    Callback: (() -> ())?,
+})
+    config = config or {}
+    local theme = self._theme
+    local duration = config.Duration or 5
+    self._notifyOrder = (self._notifyOrder or 0) + 1
 
-	local duration = config.Duration or 5
-	self._notifyOrder = (self._notifyOrder or 0) + 1
+    local width = 240
+    local TextService = game:GetService("TextService")
+    local contentStr = config.Content or ""
+    local measured = TextService:GetTextSize(
+        contentStr, 15, Enum.Font.Ubuntu, Vector2.new(width - 24, math.huge)
+    )
+    local height = math.clamp(34 + measured.Y + 14, 62, 220)
 
-	local width = 200
+    local slot = Create("Frame", {
+        Name = "NotificationSlot",
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        ClipsDescendants = true,
+        LayoutOrder = self._notifyOrder,
+        Size = UDim2.new(0, width, 0, 0),
+        Parent = self._notifyHolder,
+    })
 
-	local holder = Create("Frame", {
-		Name = "NotificationHolder",
-		BackgroundColor3 = Color3.fromRGB(46, 81, 86),
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		ClipsDescendants = true,
-		LayoutOrder = self._notifyOrder,
-		Position = UDim2.fromOffset(-width - 20, 0),
-		Size = UDim2.fromOffset(width, 150),
-		Parent = self._notifyHolder,
-	})
-	ApplyCorner(holder, 4)
+    local card = Create("Frame", {
+        Name = "Card",
+        BackgroundColor3 = theme.CategoryTopBar,
+        BackgroundTransparency = 0.05,
+        BorderSizePixel = 0,
+        ClipsDescendants = true,
+        Position = UDim2.new(-1, -12, 0, 0),
+        Size = UDim2.new(1, 0, 1, 0),
+        Parent = slot,
+    })
+    ApplyCorner(card, 4)
+    self:_track(card, "BackgroundColor3", "CategoryTopBar")
 
-	Create("UIGradient", {
-		Rotation = 45,
-		Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, Color3.fromRGB(70, 110, 116)),
-			ColorSequenceKeypoint.new(1, Color3.fromRGB(28, 54, 58)),
-		}),
-		Parent = holder,
-	})
+    local grad = Create("UIGradient", {
+        Rotation = 90,
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, theme.GradientTop),
+            ColorSequenceKeypoint.new(1, theme.GradientBottom),
+        }),
+        Parent = card,
+    })
+    self:_trackGradient(grad, "GradientTop", "GradientBottom")
 
-	local holderStroke = Create("UIStroke", {
-		Color = Color3.fromRGB(255, 255, 255),
-		Transparency = 1, -- başta görünmez
-		Parent = holder,
-	})
-	local strokeGradient = Create("UIGradient", {
-		Rotation = 45,
-		Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, theme.Accent),
-			ColorSequenceKeypoint.new(1, theme.GradientBottom),
-		}),
-		Transparency = NumberSequence.new({
-			NumberSequenceKeypoint.new(0, 0.2),
-			NumberSequenceKeypoint.new(0.5, 0.7),
-			NumberSequenceKeypoint.new(1, 0.2),
-		}),
-		Parent = holderStroke,
-	})
-	self:_trackAccent(strokeGradient, function(accent)
-		strokeGradient.Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, accent),
-			ColorSequenceKeypoint.new(1, self._theme.GradientBottom),
-		})
-	end)
+    local stroke = Create("UIStroke", { Color = theme.Accent, Transparency = 0.55, Parent = card })
+    self:_trackAccent(stroke, function(accent) stroke.Color = accent end)
 
-	local title = Create("TextLabel", {
-		Name = "Title",
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		Size = UDim2.fromOffset(200, 28),
-		FontFace = MakeFont("Ubuntu"),
-		Text = config.Title or "Title",
-		TextColor3 = Color3.fromRGB(255, 255, 255),
-		TextTransparency = 1, -- başta görünmez
-		TextSize = 17,
-		Parent = holder,
-	})
+    local accentBar = Create("Frame", {
+        Name = "AccentBar",
+        BackgroundColor3 = theme.Accent,
+        BorderSizePixel = 0,
+        Size = UDim2.new(0, 3, 1, 0),
+        Parent = card,
+    })
+    self:_trackAccent(accentBar, function(accent) accentBar.BackgroundColor3 = accent end)
 
-	local icon = nil
-	if config.Icon ~= nil then
-		local resolved = ResolveIcon(config.Icon)
-		if resolved ~= "" then
-			icon = Create("ImageLabel", {
-				Name = "Icon",
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				Position = UDim2.fromScale(0.04, 0.0266),
-				Size = UDim2.fromOffset(25, 28),
-				Image = resolved,
-				ImageTransparency = 1,
-				Parent = holder,
-			})
+    local textX = 12
+    if config.Icon then
+        local resolved = ResolveIcon(config.Icon)
+        if resolved ~= "" then
+            textX = 34
+            Create("ImageLabel", {
+                Name = "Icon",
+                BackgroundTransparency = 1,
+                Position = UDim2.fromOffset(10, 7),
+                Size = UDim2.fromOffset(18, 18),
+                Image = resolved,
+                Parent = card,
+            })
+        end
+    end
 
-			local myIcon = icon
-			task.spawn(function()
-				pcall(function()
-					ContentProvider:PreloadAsync({ myIcon })
-				end)
-				if myIcon.Parent then
-					TweenService:Create(myIcon, MEDIUM, { ImageTransparency = 0 }):Play()
-				end
-			end)
-		end
-	end
+    local title = Create("TextLabel", {
+        Name = "Title",
+        BackgroundTransparency = 1,
+        Position = UDim2.fromOffset(textX, 6),
+        Size = UDim2.new(1, -(textX + 10), 0, 20),
+        Font = Enum.Font.Ubuntu,
+        Text = config.Title or "Notification",
+        TextColor3 = theme.PrimaryText,
+        TextSize = 16,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextTruncate = Enum.TextTruncate.AtEnd,
+        Parent = card,
+    })
+    self:_track(title, "TextColor3", "PrimaryText")
 
-	local content = Create("TextLabel", {
-		Name = "Content",
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		Position = UDim2.fromScale(0, 0.24),
-		Size = UDim2.fromOffset(200, 95),
-		FontFace = MakeFont("Ubuntu"),
-		Text = config.Content or "Content",
-		TextColor3 = Color3.fromRGB(194, 194, 194),
-		TextTransparency = 1, -- başta görünmez
-		TextSize = 15,
-		TextXAlignment = Enum.TextXAlignment.Left,
-		TextYAlignment = Enum.TextYAlignment.Top,
-		Parent = holder,
-	})
-	Create("UIPadding", {
-		PaddingTop = UDim.new(0, 3),
-		PaddingBottom = UDim.new(0, 3),
-		PaddingLeft = UDim.new(0, 5),
-		PaddingRight = UDim.new(0, 5),
-		Parent = content,
-	})
+    local content = Create("TextLabel", {
+        Name = "Content",
+        BackgroundTransparency = 1,
+        Position = UDim2.fromOffset(12, 30),
+        Size = UDim2.new(1, -24, 1, -38),
+        Font = Enum.Font.Ubuntu,
+        Text = contentStr,
+        TextColor3 = theme.SecondaryText,
+        TextSize = 15,
+        TextWrapped = true,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextYAlignment = Enum.TextYAlignment.Top,
+        Parent = card,
+    })
+    self:_track(content, "TextColor3", "SecondaryText")
 
-	local timer = Create("Frame", {
-		Name = "Timer",
-		AnchorPoint = Vector2.new(0, 1),
-		BackgroundColor3 = Color3.fromRGB(96, 182, 190),
-		BackgroundTransparency = 1, -- başta görünmez
-		BorderSizePixel = 0,
-		Position = UDim2.fromScale(0, 1),
-		Size = UDim2.new(1, 0, 0, 5),
-		Parent = holder,
-	})
-	ApplyCorner(timer, 2)
+    local timerBar = Create("Frame", {
+        Name = "Timer",
+        AnchorPoint = Vector2.new(0, 1),
+        BackgroundColor3 = theme.Accent,
+        BorderSizePixel = 0,
+        Position = UDim2.fromScale(0, 1),
+        Size = UDim2.new(1, 0, 0, 3),
+        Parent = card,
+    })
+    self:_trackAccent(timerBar, function(accent) timerBar.BackgroundColor3 = accent end)
 
-	local clickBtn = Create("TextButton", {
-		Name = "ClickToClose",
-		AutoButtonColor = false,
-		BackgroundTransparency = 1,
-		Text = "",
-		Size = UDim2.fromScale(1, 1),
-		ZIndex = 10,
-		Parent = holder,
-	})
+    local clickBtn = Create("TextButton", {
+        Name = "ClickToClose",
+        AutoButtonColor = false,
+        BackgroundTransparency = 1,
+        Text = "",
+        Size = UDim2.fromScale(1, 1),
+        ZIndex = 10,
+        Parent = card,
+    })
 
-	local dismissed = false
-	local timerTween: Tween? = nil
+    local dismissed = false
+    local timerTween: Tween? = nil
 
-	local function slideIn()
-		TweenService:Create(holder, MEDIUM, {
-			Position = UDim2.fromOffset(0, 0),
-			BackgroundTransparency = 0.03,
-		}):Play()
-		TweenService:Create(holderStroke, MEDIUM, { Transparency = 0.8 }):Play()
-		TweenService:Create(title, MEDIUM, { TextTransparency = 0 }):Play()
-		TweenService:Create(content, MEDIUM, { TextTransparency = 0 }):Play()
-		TweenService:Create(timer, MEDIUM, { BackgroundTransparency = 0 }):Play()
-	end
+    TweenService:Create(slot, MEDIUM, {
+        Size = UDim2.new(0, width, 0, height),
+    }):Play()
+    TweenService:Create(card,
+        TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+        { Position = UDim2.new(0, 0, 0, 0) }
+    ):Play()
 
-	local function dismiss()
-		if dismissed then return end
-		dismissed = true
+    local function dismiss()
+        if dismissed then return end
+        dismissed = true
+        if timerTween then timerTween:Cancel() end
 
-		if timerTween then
-			timerTween:Cancel()
-		end
+        local slideOut = TweenService:Create(card,
+            TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+            { Position = UDim2.new(-1, -12, 0, 0) }
+        )
+        slideOut:Play()
+        slideOut.Completed:Once(function()
+            local collapse = TweenService:Create(slot, FAST, {
+                Size = UDim2.new(0, width, 0, 0),
+            })
+            collapse:Play()
+            collapse.Completed:Once(function()
+                slot:Destroy()
+            end)
+        end)
+    end
 
-		local FASTSLIDE = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+    clickBtn.MouseButton1Click:Connect(function()
+        if config.Callback then task.spawn(config.Callback) end
+        dismiss()
+    end)
 
-		local out = TweenService:Create(holder, FASTSLIDE, {
-			Position = UDim2.fromOffset(-width - 30, 0),
-			BackgroundTransparency = 1,
-		})
-		TweenService:Create(holderStroke, FASTSLIDE, { Transparency = 1 }):Play()
-		TweenService:Create(title, FASTSLIDE, { TextTransparency = 1 }):Play()
-		TweenService:Create(content, FASTSLIDE, { TextTransparency = 1 }):Play()
-		TweenService:Create(timer, FASTSLIDE, { BackgroundTransparency = 1 }):Play()
-		if icon then
-			TweenService:Create(icon, FASTSLIDE, { ImageTransparency = 1 }):Play()
-		end
-		out:Play()
+    timerTween = TweenService:Create(timerBar,
+        TweenInfo.new(duration, Enum.EasingStyle.Linear),
+        { Size = UDim2.new(0, 0, 0, 3) }
+    )
+    timerTween:Play()
+    timerTween.Completed:Once(function(state)
+        if state == Enum.PlaybackState.Completed then
+            dismiss()
+        end
+    end)
 
-		out.Completed:Once(function()
-			holder:Destroy()
-		end)
-	end
-
-	clickBtn.MouseButton1Click:Connect(function()
-		if config.Callback then
-			task.spawn(config.Callback)
-		end
-		dismiss()
-	end)
-
-	slideIn()
-
-	timerTween = TweenService:Create(
-		timer,
-		TweenInfo.new(duration, Enum.EasingStyle.Linear),
-		{ Size = UDim2.new(0, 0, 0, 5) }
-	)
-	timerTween:Play()
-	timerTween.Completed:Once(function(state)
-		if state == Enum.PlaybackState.Completed then
-			dismiss()
-		end
-	end)
-
-	local api = {}
-	function api:Close() dismiss() end
-	function api:SetTitle(text: string) title.Text = text end
-	function api:SetContent(text: string) content.Text = text end
-	return api
+    local api = {}
+    function api:Close() dismiss() end
+    function api:SetTitle(t: string) title.Text = t end
+    function api:SetContent(t: string) content.Text = t end
+    return api
 end
 
 -- ========================================================================
@@ -4186,6 +4174,31 @@ function Nexo.CreateWindow(config: {
 		Callback = function(preset)
 			self_win:SetThemePreset(preset)
 		end,
+	})
+	themeCat:AddSlider({
+    Title = "Window Opacity",
+    Description = "Background transparency",
+    Min = 0, Max = 80, Default = 3, Suffix = "%",
+    Callback = function(v)
+        main.BackgroundTransparency = v / 100
+    end,
+	})
+	local behaviorCat = settingsTab:AddCategory({ Title = "Behavior", Icon = "settings", Side = "Right" })
+	behaviorCat:AddKeybind({
+    Title = "Toggle UI",
+    Description = "Show/hide the window",
+    Default = Enum.KeyCode.RightShift,
+    Callback = function()
+        self_win:ToggleVisibility()
+    end,
+	})
+	behaviorCat:AddButton({
+    Title = "Unload",
+    Description = "Removes the UI completely",
+    Icon = "trash-2",
+    Callback = function()
+        self_win:UnloadGui()
+    end,
 	})
 
 	self_win.GetSettingsTab = function()
