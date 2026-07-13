@@ -332,41 +332,41 @@ function Category:SetCollapsed(collapsed: boolean, animate: boolean?)
 end
 
 function Category:SetLocked(locked: boolean)
-	self._locked = locked
-	local theme = self._window._theme
+    self._locked = locked
+    local theme = self._window._theme
 
-	if locked then
-		if not self._collapsed then
-			self.LockFrame.Visible = true
-		end
-		TweenService:Create(self.LockFrame, MEDIUM, { BackgroundTransparency = 0.35 }):Play()
-		TweenService:Create(self.LockIcon, MEDIUM, { ImageTransparency = 0.6 }):Play()
-		TweenService:Create(self.LockToggle, MEDIUM, {
-			BackgroundTransparency = 0,
-			BackgroundColor3 = theme.ToggleActive,
-		}):Play()
-		TweenService:Create(self.LockKnob, MEDIUM, {
-			AnchorPoint = Vector2.new(1, 0),
-			Position = UDim2.new(1, 0, 0, 0),
-			BackgroundColor3 = Color3.fromRGB(235, 235, 235),
-		}):Play()
-		self.ContainerScroll.ScrollingEnabled = false
-	else
-		TweenService:Create(self.LockFrame, MEDIUM, { BackgroundTransparency = 1 }):Play()
-		TweenService:Create(self.LockIcon, MEDIUM, { ImageTransparency = 1 }):Play()
-		TweenService:Create(self.LockToggle, MEDIUM, { BackgroundTransparency = 1 }):Play()
-		TweenService:Create(self.LockKnob, MEDIUM, {
-			AnchorPoint = Vector2.new(0, 0),
-			Position = UDim2.new(0, 0, 0, 0),
-			BackgroundColor3 = theme.ToggleKnob,
-		}):Play()
-		task.delay(0.25, function()
-			if not self._locked then
-				self.LockFrame.Visible = false
-			end
-		end)
-		self.ContainerScroll.ScrollingEnabled = true
-	end
+    if locked then
+        if not self._collapsed then
+            self.LockFrame.Visible = true
+        end
+        TweenService:Create(self.LockFrame, MEDIUM, { BackgroundTransparency = 0.35 }):Play()
+        TweenService:Create(self.LockIcon, MEDIUM, { ImageTransparency = 0.6 }):Play()
+        TweenService:Create(self.LockToggle, MEDIUM, {
+            BackgroundTransparency = 0,
+            BackgroundColor3 = theme.ToggleActive,
+        }):Play()
+        TweenService:Create(self.LockKnob, MEDIUM, {
+            AnchorPoint = Vector2.new(1, 0),
+            Position = UDim2.new(1, 0, 0, 0),
+            BackgroundColor3 = theme.ToggleKnobActive,
+        }):Play()
+        self.ContainerScroll.ScrollingEnabled = false
+    else
+        TweenService:Create(self.LockFrame, MEDIUM, { BackgroundTransparency = 1 }):Play()
+        TweenService:Create(self.LockIcon, MEDIUM, { ImageTransparency = 1 }):Play()
+        TweenService:Create(self.LockToggle, MEDIUM, { BackgroundTransparency = 1 }):Play()
+        TweenService:Create(self.LockKnob, MEDIUM, {
+            AnchorPoint = Vector2.new(0, 0),
+            Position = UDim2.new(0, 0, 0, 0),
+            BackgroundColor3 = theme.ToggleKnob,
+        }):Play()
+        task.delay(0.25, function()
+            if not self._locked then
+                self.LockFrame.Visible = false
+            end
+        end)
+        self.ContainerScroll.ScrollingEnabled = true
+    end
 end
 
 function Category:Destroy()
@@ -819,21 +819,21 @@ function Window:ApplyTheme()
 end
 
 function Window:SetAccent(color: Color3)
-	self._theme.Accent = color
+    self._theme.Accent = color
 
-	if self._tooltipStroke then
-		self._tooltipStroke.Color = color
-	end
+    if self._tooltipStroke then
+        self._tooltipStroke.Color = color
+    end
 
-	local bgHolder = self.Main:FindFirstChild("BackgroundGradientHolder")
-	if bgHolder then
-		local grad = bgHolder:FindFirstChildOfClass("UIGradient")
-		if grad then
-			grad.Color = ColorSequence.new(color)
-		end
-	end
+    local bgHolder = self.Main:FindFirstChild("BackgroundGradientHolder")
+    if bgHolder then
+        local grad = bgHolder:FindFirstChildOfClass("UIGradient")
+        if grad then
+            grad.Color = ColorSequence.new(color)
+        end
+    end
 
-	self._accentObjects = self._accentObjects or {}
+    self._accentObjects = self._accentObjects or {}
     local validEntries = {}
 
     for _, entry in ipairs(self._accentObjects) do
@@ -845,7 +845,8 @@ function Window:SetAccent(color: Color3)
 
     self._accentObjects = validEntries
 
-	self:ApplyTheme()
+    self:ApplyTheme()
+    self:_updateNav()
 end
 
 function Window:_trackAccent(inst: Instance, apply: (color: Color3) -> ())
@@ -856,72 +857,164 @@ function Window:_trackAccent(inst: Instance, apply: (color: Color3) -> ())
 end
 
 local ThemePresets = {
-	Dark = {
-		WindowBackground = Color3.fromRGB(24, 42, 47),
-		TabBackground = Color3.fromRGB(25, 45, 50),
-		CategoryBackground = Color3.fromRGB(35, 63, 70),
-		CategoryTopBar = Color3.fromRGB(43, 77, 86),
-		NavigationBackground = Color3.fromRGB(24, 42, 47),
-		NavButtonBackground = Color3.fromRGB(36, 65, 70),
+    Default = {
+        Accent = Color3.fromRGB(29, 132, 144),
+        WindowBackground = Color3.fromRGB(24, 42, 47),
+        TabBackground = Color3.fromRGB(25, 45, 50),
+        CategoryBackground = Color3.fromRGB(35, 63, 70),
+        CategoryTopBar = Color3.fromRGB(43, 77, 86),
+        NavigationBackground = Color3.fromRGB(24, 42, 47),
+        NavButtonBackground = Color3.fromRGB(36, 65, 70),
+        Stroke = Color3.fromRGB(255, 255, 255),
+        MainStroke = Color3.fromRGB(170, 170, 170),
+        TitleText = Color3.fromRGB(230, 230, 255),
+        PrimaryText = Color3.fromRGB(254, 254, 254),
+        SecondaryText = Color3.fromRGB(180, 180, 180),
+        NavText = Color3.fromRGB(210, 210, 210),
+        ToggleKnob = Color3.fromRGB(190, 190, 190),
+        ToggleKnobActive = Color3.fromRGB(235, 235, 235),
+        ToggleActive = Color3.fromRGB(59, 108, 120),
+        GradientTop = Color3.fromRGB(31, 54, 60),
+        GradientBottom = Color3.fromRGB(20, 35, 38),
+        SliderFill = Color3.fromRGB(75, 137, 148),
+        SliderEmpty = Color3.fromRGB(34, 62, 67),
+        HolderColor = Color3.fromRGB(255, 255, 255),
+        HolderTransparency = 0.8,
+        HoverColor = Color3.fromRGB(255, 255, 255),
+        HoverTransparency = 0.91,
+        PickerBackground = Color3.fromRGB(32, 55, 61),
+    },
 
-		Stroke = Color3.fromRGB(255, 255, 255),
-		MainStroke = Color3.fromRGB(170, 170, 170),
+    Dark = {
+        Accent = Color3.fromRGB(98, 114, 164),
+        WindowBackground = Color3.fromRGB(24, 24, 28),
+        TabBackground = Color3.fromRGB(28, 28, 33),
+        CategoryBackground = Color3.fromRGB(38, 38, 44),
+        CategoryTopBar = Color3.fromRGB(46, 46, 54),
+        NavigationBackground = Color3.fromRGB(24, 24, 28),
+        NavButtonBackground = Color3.fromRGB(40, 40, 47),
+        Stroke = Color3.fromRGB(255, 255, 255),
+        MainStroke = Color3.fromRGB(150, 150, 155),
+        TitleText = Color3.fromRGB(235, 235, 245),
+        PrimaryText = Color3.fromRGB(250, 250, 250),
+        SecondaryText = Color3.fromRGB(170, 170, 178),
+        NavText = Color3.fromRGB(205, 205, 212),
+        ToggleKnob = Color3.fromRGB(185, 185, 190),
+        ToggleKnobActive = Color3.fromRGB(240, 240, 245),
+        ToggleActive = Color3.fromRGB(88, 102, 148),
+        GradientTop = Color3.fromRGB(34, 34, 40),
+        GradientBottom = Color3.fromRGB(22, 22, 26),
+        SliderFill = Color3.fromRGB(98, 114, 164),
+        SliderEmpty = Color3.fromRGB(32, 32, 38),
+        HolderColor = Color3.fromRGB(255, 255, 255),
+        HolderTransparency = 0.82,
+        HoverColor = Color3.fromRGB(255, 255, 255),
+        HoverTransparency = 0.91,
+        PickerBackground = Color3.fromRGB(32, 32, 38),
+    },
 
-		TitleText = Color3.fromRGB(230, 230, 255),
-		PrimaryText = Color3.fromRGB(254, 254, 254),
-		SecondaryText = Color3.fromRGB(180, 180, 180),
-		NavText = Color3.fromRGB(210, 210, 210),
+    Light = {
+        Accent = Color3.fromRGB(60, 145, 165),
+        WindowBackground = Color3.fromRGB(235, 238, 242),
+        TabBackground = Color3.fromRGB(222, 227, 233),
+        CategoryBackground = Color3.fromRGB(210, 216, 222),
+        CategoryTopBar = Color3.fromRGB(195, 202, 210),
+        NavigationBackground = Color3.fromRGB(225, 230, 235),
+        NavButtonBackground = Color3.fromRGB(200, 207, 215),
+        Stroke = Color3.fromRGB(120, 120, 130),
+        MainStroke = Color3.fromRGB(90, 90, 100),
+        TitleText = Color3.fromRGB(30, 30, 60),
+        PrimaryText = Color3.fromRGB(20, 20, 30),
+        SecondaryText = Color3.fromRGB(70, 70, 80),
+        NavText = Color3.fromRGB(40, 40, 55),
+        ToggleKnob = Color3.fromRGB(110, 110, 120),
+        ToggleKnobActive = Color3.fromRGB(250, 250, 252),
+        ToggleActive = Color3.fromRGB(60, 145, 165),
+        GradientTop = Color3.fromRGB(225, 230, 235),
+        GradientBottom = Color3.fromRGB(205, 212, 220),
+        SliderFill = Color3.fromRGB(80, 150, 165),
+        SliderEmpty = Color3.fromRGB(188, 195, 203),
+        HolderColor = Color3.fromRGB(160, 168, 178),
+        HolderTransparency = 0.55,
+        HoverColor = Color3.fromRGB(25, 25, 35), 
+        HoverTransparency = 0.92,
+        PickerBackground = Color3.fromRGB(215, 220, 228),
+    },
 
-		ToggleKnob = Color3.fromRGB(190, 190, 190),
-		ToggleActive = Color3.fromRGB(72, 150, 168),
+    Midnight = {
+        Accent = Color3.fromRGB(124, 108, 255),
+        WindowBackground = Color3.fromRGB(16, 18, 32),
+        TabBackground = Color3.fromRGB(19, 22, 38),
+        CategoryBackground = Color3.fromRGB(28, 31, 52),
+        CategoryTopBar = Color3.fromRGB(35, 39, 64),
+        NavigationBackground = Color3.fromRGB(16, 18, 32),
+        NavButtonBackground = Color3.fromRGB(30, 33, 56),
+        Stroke = Color3.fromRGB(255, 255, 255),
+        MainStroke = Color3.fromRGB(150, 145, 190),
+        TitleText = Color3.fromRGB(230, 228, 255),
+        PrimaryText = Color3.fromRGB(248, 246, 255),
+        SecondaryText = Color3.fromRGB(168, 165, 200),
+        NavText = Color3.fromRGB(205, 202, 235),
+        ToggleKnob = Color3.fromRGB(180, 178, 210),
+        ToggleKnobActive = Color3.fromRGB(240, 238, 255),
+        ToggleActive = Color3.fromRGB(98, 86, 200),
+        GradientTop = Color3.fromRGB(26, 29, 48),
+        GradientBottom = Color3.fromRGB(15, 17, 28),
+        SliderFill = Color3.fromRGB(110, 96, 220),
+        SliderEmpty = Color3.fromRGB(24, 26, 44),
+        HolderColor = Color3.fromRGB(255, 255, 255),
+        HolderTransparency = 0.82,
+        HoverColor = Color3.fromRGB(255, 255, 255),
+        HoverTransparency = 0.91,
+        PickerBackground = Color3.fromRGB(24, 26, 44),
+    },
 
-		GradientTop = Color3.fromRGB(31, 54, 60),
-		GradientBottom = Color3.fromRGB(20, 35, 38),
-		SliderFill = Color3.fromRGB(75, 137, 148),
-		HolderTransparency = 0.8,
-		HolderColor = Color3.fromRGB(255, 255, 255),
-	},
-
-	Light = {
-		WindowBackground = Color3.fromRGB(235, 238, 242),
-		TabBackground = Color3.fromRGB(222, 227, 233),
-		CategoryBackground = Color3.fromRGB(210, 216, 222),
-		CategoryTopBar = Color3.fromRGB(195, 202, 210),
-		NavigationBackground = Color3.fromRGB(225, 230, 235),
-		NavButtonBackground = Color3.fromRGB(200, 207, 215),
-
-		Stroke = Color3.fromRGB(120, 120, 130),
-		MainStroke = Color3.fromRGB(90, 90, 100),
-
-		TitleText = Color3.fromRGB(30, 30, 60),
-		PrimaryText = Color3.fromRGB(20, 20, 30),
-		SecondaryText = Color3.fromRGB(70, 70, 80),
-		NavText = Color3.fromRGB(40, 40, 55),
-
-		ToggleKnob = Color3.fromRGB(110, 110, 120),
-		ToggleActive = Color3.fromRGB(60, 145, 165),
-
-		GradientTop = Color3.fromRGB(225, 230, 235),
-		GradientBottom = Color3.fromRGB(205, 212, 220),
-		SliderFill = Color3.fromRGB(80, 150, 165),
-		HolderTransparency = 0.35,
-		HolderColor = Color3.fromRGB(200, 200, 200),
-	},
+    Amoled = {
+        Accent = Color3.fromRGB(0, 220, 150),
+        WindowBackground = Color3.fromRGB(10, 10, 10),
+        TabBackground = Color3.fromRGB(14, 14, 14),
+        CategoryBackground = Color3.fromRGB(20, 20, 20),
+        CategoryTopBar = Color3.fromRGB(26, 26, 26),
+        NavigationBackground = Color3.fromRGB(10, 10, 10),
+        NavButtonBackground = Color3.fromRGB(24, 24, 24),
+        Stroke = Color3.fromRGB(255, 255, 255),
+        MainStroke = Color3.fromRGB(120, 120, 120),
+        TitleText = Color3.fromRGB(240, 240, 240),
+        PrimaryText = Color3.fromRGB(252, 252, 252),
+        SecondaryText = Color3.fromRGB(160, 160, 160),
+        NavText = Color3.fromRGB(200, 200, 200),
+        ToggleKnob = Color3.fromRGB(180, 180, 180),
+        ToggleKnobActive = Color3.fromRGB(240, 240, 240),
+        ToggleActive = Color3.fromRGB(0, 140, 110),
+        GradientTop = Color3.fromRGB(18, 18, 18),
+        GradientBottom = Color3.fromRGB(8, 8, 8),
+        SliderFill = Color3.fromRGB(0, 160, 120),
+        SliderEmpty = Color3.fromRGB(18, 18, 18),
+        HolderColor = Color3.fromRGB(255, 255, 255),
+        HolderTransparency = 0.85,
+        HoverColor = Color3.fromRGB(255, 255, 255),
+        HoverTransparency = 0.9,
+        PickerBackground = Color3.fromRGB(16, 16, 16),
+    },
 }
 
 function Window:SetThemePreset(presetName: string)
-	local preset = ThemePresets[presetName]
-	if not preset then
-		warn("[Nexo] unknown theme preset:", presetName)
-		return
-	end
+    local preset = ThemePresets[presetName]
+    if not preset then
+        warn("[Nexo] unknown theme preset:", presetName)
+        return
+    end
 
-	for key, value in pairs(preset) do
-		self._theme[key] = value
-	end
+    for key, value in pairs(preset) do
+        self._theme[key] = value
+    end
 
-	self:ApplyTheme()
-	self:_updateNav()
+    if preset.Accent then
+        self:SetAccent(preset.Accent)
+    else
+        self:ApplyTheme()
+        self:_updateNav()
+    end
 end
 
 -- lets the user set individual theme keys at runtime
@@ -1015,178 +1108,183 @@ function Window:SelectTab(tab)
 end
 
 function Window:AddTab(config: { Title: string?, Icon: (string | number)? })
-	local theme = self._theme
+    local theme = self._theme
 
-	local self_tab = setmetatable({}, Tab)
-	self_tab._window = self
-	self_tab._categories = {}
-	self_tab._hovered = false
+    local self_tab = setmetatable({}, Tab)
+    self_tab._window = self
+    self_tab._categories = {}
+    self_tab._hovered = false
 
-	-- page inside tab holder
-	local page = Create("Frame", {
-		Name = "TabPage",
-		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-		BackgroundTransparency = 0.99,
-		BorderSizePixel = 0,
-		ClipsDescendants = true,
-		Size = UDim2.fromScale(1, 1),
-		Visible = false,
-		Parent = self._tabHolder,
-	})
+    local page = Create("Frame", {
+        Name = "TabPage",
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BackgroundTransparency = 0.99,
+        BorderSizePixel = 0,
+        ClipsDescendants = true,
+        Size = UDim2.fromScale(1, 1),
+        Visible = false,
+        Parent = self._tabHolder,
+    })
 
-	local section1 = Create("ScrollingFrame", {
-		Name = "Section1",
-		Active = true,
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		Size = UDim2.fromScale(0.5, 1),
-		CanvasSize = UDim2.new(0, 0, 0, 0),
-		AutomaticCanvasSize = Enum.AutomaticSize.Y,
-		ScrollBarThickness = 0,
-		ScrollingDirection = Enum.ScrollingDirection.Y,
-		Parent = page,
-	})
-	Create("UIListLayout", {
-		Padding = UDim.new(0, 4),
-		HorizontalAlignment = Enum.HorizontalAlignment.Center,
-		SortOrder = Enum.SortOrder.LayoutOrder,
-		Parent = section1,
-	})
-	Create("UIPadding", {
-		PaddingTop = UDim.new(0, 5),
-		PaddingBottom = UDim.new(0, 5),
-		PaddingLeft = UDim.new(0, 7),
-		PaddingRight = UDim.new(0, 7),
-		Parent = section1,
-	})
+    local section1 = Create("ScrollingFrame", {
+        Name = "Section1",
+        Active = true,
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Size = UDim2.fromScale(0.5, 1),
+        CanvasSize = UDim2.new(0, 0, 0, 0),
+        AutomaticCanvasSize = Enum.AutomaticSize.Y,
+        ScrollBarThickness = 0,
+        ScrollingDirection = Enum.ScrollingDirection.Y,
+        Parent = page,
+    })
+    Create("UIListLayout", {
+        Padding = UDim.new(0, 4),
+        HorizontalAlignment = Enum.HorizontalAlignment.Center,
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Parent = section1,
+    })
+    Create("UIPadding", {
+        PaddingTop = UDim.new(0, 5),
+        PaddingBottom = UDim.new(0, 5),
+        PaddingLeft = UDim.new(0, 7),
+        PaddingRight = UDim.new(0, 7),
+        Parent = section1,
+    })
 
-	local section2 = Create("ScrollingFrame", {
-		Name = "Section2",
-		Active = true,
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		Position = UDim2.fromScale(0.5, 0),
-		Size = UDim2.fromScale(0.5, 1),
-		CanvasSize = UDim2.new(0, 0, 0, 0),
-		AutomaticCanvasSize = Enum.AutomaticSize.Y,
-		ScrollBarThickness = 0,
-		ScrollingDirection = Enum.ScrollingDirection.Y,
-		Parent = page,
-	})
-	Create("UIListLayout", {
-		Padding = UDim.new(0, 4),
-		HorizontalAlignment = Enum.HorizontalAlignment.Center,
-		SortOrder = Enum.SortOrder.LayoutOrder,
-		Parent = section2,
-	})
-	Create("UIPadding", {
-		PaddingTop = UDim.new(0, 5),
-		PaddingBottom = UDim.new(0, 5),
-		PaddingLeft = UDim.new(0, 7),
-		PaddingRight = UDim.new(0, 7),
-		Parent = section2,
-	})
+    local section2 = Create("ScrollingFrame", {
+        Name = "Section2",
+        Active = true,
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Position = UDim2.fromScale(0.5, 0),
+        Size = UDim2.fromScale(0.5, 1),
+        CanvasSize = UDim2.new(0, 0, 0, 0),
+        AutomaticCanvasSize = Enum.AutomaticSize.Y,
+        ScrollBarThickness = 0,
+        ScrollingDirection = Enum.ScrollingDirection.Y,
+        Parent = page,
+    })
+    Create("UIListLayout", {
+        Padding = UDim.new(0, 4),
+        HorizontalAlignment = Enum.HorizontalAlignment.Center,
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Parent = section2,
+    })
+    Create("UIPadding", {
+        PaddingTop = UDim.new(0, 5),
+        PaddingBottom = UDim.new(0, 5),
+        PaddingLeft = UDim.new(0, 7),
+        PaddingRight = UDim.new(0, 7),
+        Parent = section2,
+    })
 
-	Create("Frame", {
-		Name = "SeperatorBar",
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		BackgroundColor3 = Color3.fromRGB(66, 112, 121),
-		BackgroundTransparency = 0.8,
-		BorderSizePixel = 0,
-		Position = UDim2.fromScale(0.5, 0.5),
-		Size = UDim2.new(0, 1, 1, -8),
-		Parent = page,
-	})
+    local sepBar = Create("Frame", {
+        Name = "SeperatorBar",
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        BackgroundColor3 = theme.Accent,
+        BackgroundTransparency = 0.8,
+        BorderSizePixel = 0,
+        Position = UDim2.fromScale(0.5, 0.5),
+        Size = UDim2.new(0, 1, 1, -8),
+        Parent = page,
+    })
+    self:_trackAccent(sepBar, function(accent)
+        sepBar.BackgroundColor3 = accent
+    end)
 
-	-- nav button
-	local navContainer = Create("Frame", {
-		Name = "NavigationButtonContainer",
-		Active = true,
-		BackgroundColor3 = theme.NavButtonBackground,
-		BackgroundTransparency = 0.5,
-		BorderSizePixel = 0,
-		Size = UDim2.new(0, 100, 1, -3),
-		Parent = self._navContainer,
-	})
-	local navCorner = ApplyCorner(navContainer, 2)
-	Create("UIStroke", {
-		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-		Color = theme.Stroke,
-		Transparency = 0.9,
-		Parent = navContainer,
-	})
-	local navGradient = Create("UIGradient", {
-		Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, Color3.fromRGB(61, 117, 150)),
-			ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255)),
-		}),
-		Parent = navContainer,
-	})
+    -- nav button (artik tema tracked)
+    local navContainer = Create("Frame", {
+        Name = "NavigationButtonContainer",
+        Active = true,
+        BackgroundColor3 = theme.NavButtonBackground,
+        BackgroundTransparency = 0.5,
+        BorderSizePixel = 0,
+        Size = UDim2.new(0, 100, 1, -3),
+        Parent = self._navContainer,
+    })
+    self:_track(navContainer, "BackgroundColor3", "NavButtonBackground")
 
-	local navButton = Create("TextButton", {
-		Name = "NavigationButton",
-		BackgroundTransparency = 1,
-		Text = "",
-		Size = UDim2.fromScale(1, 1),
-		Parent = navContainer,
-	})
-	Create("UIPadding", { PaddingLeft = UDim.new(0, 3), Parent = navButton })
+    local navCorner = ApplyCorner(navContainer, 2)
+    local navStroke = Create("UIStroke", {
+        ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+        Color = theme.Stroke,
+        Transparency = 0.9,
+        Parent = navContainer,
+    })
+    self:_track(navStroke, "Color", "Stroke")
 
-	local navText = Create("TextLabel", {
-		Name = "Text",
-		BackgroundTransparency = 1,
-		Size = UDim2.fromScale(1, 1),
-		FontFace = MakeFont("Nunito", Enum.FontWeight.Bold),
-		Text = config.Title or "Tab",
-		TextColor3 = theme.NavText,
-		TextSize = 15,
-		TextTransparency = 0.2,
-		TextXAlignment = Enum.TextXAlignment.Left,
-		Parent = navButton,
-	})
-	Create("UIPadding", { Name = "TextPadding", PaddingLeft = UDim.new(0, 16), Parent = navText })
-	
-	local navIcon = Create("ImageButton", {
-		Name = "Icon",
-		AnchorPoint = Vector2.new(0, 0.5),
-		BackgroundTransparency = 1,
-		Position = UDim2.fromScale(0, 0.5),
-		Size = UDim2.fromOffset(13, 13),
-		Image = ResolveIcon(config.Icon or 10747373176),
-		Parent = navButton,
-	})
+    local navGradient = Create("UIGradient", {
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, theme.Accent),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255)),
+        }),
+        Parent = navContainer,
+    })
 
-	self_tab.Root = page
-	self_tab.Section1 = section1
-	self_tab.Section2 = section2
-	self_tab._navContainer = navContainer
-	self_tab._navGradient = navGradient
-	self_tab._navCorner = navCorner
-	self_tab._navIcon = navIcon
-	self_tab._navText = navText
+    local navButton = Create("TextButton", {
+        Name = "NavigationButton",
+        BackgroundTransparency = 1,
+        Text = "",
+        Size = UDim2.fromScale(1, 1),
+        Parent = navContainer,
+    })
+    Create("UIPadding", { PaddingLeft = UDim.new(0, 3), Parent = navButton })
 
-	navButton.MouseEnter:Connect(function()
-		self_tab._hovered = true
-		self:_updateNav()
-	end)
-	navButton.MouseLeave:Connect(function()
-		self_tab._hovered = false
-		self:_updateNav()
-	end)
-	navButton.MouseButton1Click:Connect(function()
-		self:SelectTab(self_tab)
-	end)
+    local navText = Create("TextLabel", {
+        Name = "Text",
+        BackgroundTransparency = 1,
+        Size = UDim2.fromScale(1, 1),
+        FontFace = MakeFont("Nunito", Enum.FontWeight.Bold),
+        Text = config.Title or "Tab",
+        TextColor3 = theme.NavText,
+        TextSize = 15,
+        TextTransparency = 0.2,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = navButton,
+    })
+    Create("UIPadding", { Name = "TextPadding", PaddingLeft = UDim.new(0, 16), Parent = navText })
+    self:_track(navText, "TextColor3", "NavText")
 
-	table.insert(self._tabs, self_tab)
-	if not self._activeTab then
-		self:SelectTab(self_tab)
-	else
-		self:_updateNav()
-	end
-	
-	
+    local navIcon = Create("ImageButton", {
+        Name = "Icon",
+        AnchorPoint = Vector2.new(0, 0.5),
+        BackgroundTransparency = 1,
+        Position = UDim2.fromScale(0, 0.5),
+        Size = UDim2.fromOffset(13, 13),
+        Image = ResolveIcon(config.Icon or 10747373176),
+        Parent = navButton,
+    })
 
-	return self_tab
+    self_tab.Root = page
+    self_tab.Section1 = section1
+    self_tab.Section2 = section2
+    self_tab._navContainer = navContainer
+    self_tab._navGradient = navGradient
+    self_tab._navCorner = navCorner
+    self_tab._navIcon = navIcon
+    self_tab._navText = navText
+
+    navButton.MouseEnter:Connect(function()
+        self_tab._hovered = true
+        self:_updateNav()
+    end)
+    navButton.MouseLeave:Connect(function()
+        self_tab._hovered = false
+        self:_updateNav()
+    end)
+    navButton.MouseButton1Click:Connect(function()
+        self:SelectTab(self_tab)
+    end)
+
+    table.insert(self._tabs, self_tab)
+    if not self._activeTab then
+        self:SelectTab(self_tab)
+    else
+        self:_updateNav()
+    end
+
+    return self_tab
 end
 
 function Tab:SetIcon(icon: (string | number)?)
@@ -1224,51 +1322,53 @@ function Window:SetTitle(text: string)
 end
 
 local function BuildHolder(window, parent: Instance, theme, height: number, withGradient: boolean)
-	local holder = Create("Frame", {
-		Name = "ComponentHolder",
-		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-		BackgroundTransparency = 0.8,
-		BorderSizePixel = 0,
-		ClipsDescendants = true,
-		Size = UDim2.new(1, 0, 0, height),
-		Parent = parent,
-	})
-	window:_track(holder, "BackgroundColor3", "HolderColor")
-	window:_track(holder, "BackgroundTransparency", "HolderTransparency")
+    local holder = Create("Frame", {
+        Name = "ComponentHolder",
+        BackgroundColor3 = theme.HolderColor,
+        BackgroundTransparency = theme.HolderTransparency,
+        BorderSizePixel = 0,
+        ClipsDescendants = true,
+        Size = UDim2.new(1, 0, 0, height),
+        Parent = parent,
+    })
+    window:_track(holder, "BackgroundColor3", "HolderColor")
+    window:_track(holder, "BackgroundTransparency", "HolderTransparency")
 
-	ApplyCorner(holder, 4)
+    ApplyCorner(holder, 4)
 
-	local holderStroke = Create("UIStroke", {
-		Color = theme.Stroke,
-		Transparency = 0.9,
-		Parent = holder,
-	})
-	window:_track(holderStroke, "Color", "Stroke")
+    local holderStroke = Create("UIStroke", {
+        Color = theme.Stroke,
+        Transparency = 0.9,
+        Parent = holder,
+    })
+    window:_track(holderStroke, "Color", "Stroke")
 
-	if withGradient then
-		local grad = Create("UIGradient", {
-			Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, theme.GradientTop),
-				ColorSequenceKeypoint.new(1, theme.GradientBottom),
-			}),
-			Parent = holder,
-		})
-		window:_trackGradient(grad, "GradientTop", "GradientBottom")
-	end
+    if withGradient then
+        local grad = Create("UIGradient", {
+            Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0, theme.GradientTop),
+                ColorSequenceKeypoint.new(1, theme.GradientBottom),
+            }),
+            Parent = holder,
+        })
+        window:_trackGradient(grad, "GradientTop", "GradientBottom")
+    end
 
-	local bg = Create("ImageLabel", {
-		Name = "Background",
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		Size = UDim2.fromScale(1, 1),
-		ZIndex = -10,
-		Image = "rbxassetid://36169650",
-		ImageTransparency = 1,
-		ScaleType = Enum.ScaleType.Crop,
-		Parent = holder,
-	})
+    local bg = Create("ImageLabel", {
+        Name = "Background",
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Size = UDim2.fromScale(1, 1),
+        ZIndex = -10,
+        Image = "rbxassetid://36169650",
+        ImageColor3 = theme.HoverColor,
+        ImageTransparency = 1,
+        ScaleType = Enum.ScaleType.Crop,
+        Parent = holder,
+    })
+    window:_track(bg, "ImageColor3", "HoverColor")
 
-	return holder, bg
+    return holder, bg
 end
 
 -- adds a title + description pair to a holder
@@ -1311,13 +1411,30 @@ local function BuildInfo(window, parent: Instance, theme, title: string, descrip
 end
 
 -- wires the standard hover fade for a holder background
-local function WireHover(holder: Instance, bg: ImageLabel)
-	holder.MouseEnter:Connect(function()
-		TweenService:Create(bg, FAST, { ImageTransparency = 0.91 }):Play()
-	end)
-	holder.MouseLeave:Connect(function()
-		TweenService:Create(bg, FAST, { ImageTransparency = 1 }):Play()
-	end)
+local function WireHover(window, holder: GuiObject, bg: ImageLabel)
+    holder.MouseEnter:Connect(function()
+        local t = window._theme
+        bg.ImageColor3 = t.HoverColor
+        TweenService:Create(bg, FAST, { ImageTransparency = t.HoverTransparency }):Play()
+    end)
+    holder.MouseLeave:Connect(function()
+        TweenService:Create(bg, FAST, { ImageTransparency = 1 }):Play()
+    end)
+end
+
+local function WireClick(window, button: GuiButton, bg: ImageLabel)
+    button.MouseButton1Down:Connect(function()
+        local t = window._theme
+        bg.ImageColor3 = t.HoverColor
+        TweenService:Create(bg, TweenInfo.new(0.06, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            ImageTransparency = math.clamp(t.HoverTransparency - 0.18, 0, 1),
+        }):Play()
+    end)
+    button.MouseButton1Up:Connect(function()
+        TweenService:Create(bg, FAST, {
+            ImageTransparency = window._theme.HoverTransparency,
+        }):Play()
+    end)
 end
 
 -- ========================================================================
@@ -1325,49 +1442,54 @@ end
 -- ========================================================================
 
 function Window:_ensureTooltip()
-	if self._tooltip then
-		return self._tooltip
-	end
+    if self._tooltip then
+        return self._tooltip
+    end
 
-	local theme = self._theme
+    local theme = self._theme
 
-	local tip = Create("TextLabel", {
-		Name = "Tooltip",
-		BackgroundColor3 = theme.GradientBottom,
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		Visible = false,
-		ZIndex = 5000,
-		FontFace = MakeFont("Nunito", Enum.FontWeight.Bold),
-		Text = "",
-		TextColor3 = theme.PrimaryText,
-		TextTransparency = 1,
-		TextSize = 14,
-		AutomaticSize = Enum.AutomaticSize.XY,
-		Parent = self.ScreenGui,
-	})
-	ApplyCorner(tip, 2)
+    local tip = Create("TextLabel", {
+        Name = "Tooltip",
+        BackgroundColor3 = theme.GradientBottom,
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Visible = false,
+        ZIndex = 5000,
+        FontFace = MakeFont("Nunito", Enum.FontWeight.Bold),
+        Text = "",
+        TextColor3 = theme.PrimaryText,
+        TextTransparency = 1,
+        TextSize = 14,
+        AutomaticSize = Enum.AutomaticSize.XY,
+        Parent = self.ScreenGui,
+    })
+    ApplyCorner(tip, 2)
+    self:_track(tip, "BackgroundColor3", "GradientBottom")
+    self:_track(tip, "TextColor3", "PrimaryText")
 
-	-- accent-colored border so it matches the current theme
-	local tipStroke = Create("UIStroke", {
-		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-		Color = theme.Accent,
-		Transparency = 1,
-		Thickness = 1,
-		Parent = tip,
-	})
+    -- accent-colored border so it matches the current theme
+    local tipStroke = Create("UIStroke", {
+        ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+        Color = theme.Accent,
+        Transparency = 1,
+        Thickness = 1,
+        Parent = tip,
+    })
+    self:_trackAccent(tipStroke, function(accent)
+        tipStroke.Color = accent
+    end)
 
-	Create("UIPadding", {
-		PaddingTop = UDim.new(0, 4),
-		PaddingBottom = UDim.new(0, 4),
-		PaddingLeft = UDim.new(0, 8),
-		PaddingRight = UDim.new(0, 8),
-		Parent = tip,
-	})
+    Create("UIPadding", {
+        PaddingTop = UDim.new(0, 4),
+        PaddingBottom = UDim.new(0, 4),
+        PaddingLeft = UDim.new(0, 8),
+        PaddingRight = UDim.new(0, 8),
+        Parent = tip,
+    })
 
-	self._tooltip = tip
-	self._tooltipStroke = tipStroke
-	return tip
+    self._tooltip = tip
+    self._tooltipStroke = tipStroke
+    return tip
 end
 
 -- attaches tooltip behaviour to any gui object
@@ -1432,67 +1554,79 @@ end
 -- ========================================================================
 
 function Category:AddButton(config: {
-	Title: string?,
-	Description: string?,
-	Icon: (string | number)?,
-	Tooltip: string?,
-	Callback: (() -> ())?,
-	})
-	local theme = self._window._theme
-	local holder, bg = BuildHolder(self._window, self.ContainerScroll, theme, 45, true)
+    Title: string?,
+    Description: string?,
+    Icon: (string | number)?,
+    Tooltip: string?,
+    Callback: (() -> ())?,
+    })
+    local theme = self._window._theme
+    local holder, bg = BuildHolder(self._window, self.ContainerScroll, theme, 45, true)
 
-	local info = Create("Frame", {
-		Name = "ButtonInfo",
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		Size = UDim2.fromScale(1, 1),
-		Parent = holder,
-	})
-	local titleLabel, descLabel = BuildInfo(self._window, info, theme, config.Title or "Button", config.Description)
+    local info = Create("Frame", {
+        Name = "ButtonInfo",
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Size = UDim2.fromScale(1, 1),
+        Parent = holder,
+    })
+    local titleLabel, descLabel = BuildInfo(self._window, info, theme, config.Title or "Button", config.Description)
 
-	local icon = Create("ImageLabel", {
-		Name = "ButtonIcon",
-		AnchorPoint = Vector2.new(1, 0.5),
-		BackgroundTransparency = 1,
-		Position = UDim2.fromScale(1, 0.5),
-		Size = UDim2.fromOffset(22, 22),
-		Image = ResolveIcon(config.Icon or 10734898194),
-		Parent = info,
-	})
-	Create("UIPadding", { PaddingRight = UDim.new(0, 8), Parent = info })
+    local icon = Create("ImageLabel", {
+        Name = "ButtonIcon",
+        AnchorPoint = Vector2.new(1, 0.5),
+        BackgroundTransparency = 1,
+        Position = UDim2.fromScale(1, 0.5),
+        Size = UDim2.fromOffset(22, 22),
+        Image = ResolveIcon(config.Icon or 10734898194),
+        Parent = info,
+    })
+    Create("UIPadding", { PaddingRight = UDim.new(0, 8), Parent = info })
 
-	local button = Create("TextButton", {
-		Name = "Button",
-		AutoButtonColor = false,
-		BackgroundTransparency = 1,
-		Text = "",
-		Size = UDim2.fromScale(1, 1),
-		ZIndex = 20,
-		Parent = holder,
-	})
+    local button = Create("TextButton", {
+        Name = "Button",
+        AutoButtonColor = false,
+        BackgroundTransparency = 1,
+        Text = "",
+        Size = UDim2.fromScale(1, 1),
+        ZIndex = 20,
+        Parent = holder,
+    })
 
-	WireHover(holder, bg)
-	button.MouseButton1Click:Connect(function()
-		if config.Callback then
-			task.spawn(config.Callback)
-		end
-	end)
+    WireHover(self._window, holder, bg)
+    WireClick(self._window, button, bg)
 
-	if config.Tooltip then
-		self._window:AttachTooltip(holder, config.Tooltip)
-	end
+    button.MouseButton1Click:Connect(function()
+        -- ikon minik bir punch yapsin
+        TweenService:Create(icon, TweenInfo.new(0.07, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.fromOffset(18, 18),
+        }):Play()
+        task.delay(0.07, function()
+            TweenService:Create(icon, TweenInfo.new(0.18, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = UDim2.fromOffset(22, 22),
+            }):Play()
+        end)
 
-	local api = {}
-	function api:SetTitle(t: string) titleLabel.Text = t end
-	function api:SetDescription(d: string) descLabel.Text = d end
-	function api:SetIcon(i) icon.Image = ResolveIcon(i) end
-	function api:SetVisible(v: boolean) holder.Visible = v end
-	function api:Destroy() holder:Destroy() end
-	api._holder = holder
-	api._searchTitle = config.Title or "Button"
-	api._searchDescription = config.Description or ""
+        if config.Callback then
+            task.spawn(config.Callback)
+        end
+    end)
 
-	return self:_register(api)
+    if config.Tooltip then
+        self._window:AttachTooltip(holder, config.Tooltip)
+    end
+
+    local api = {}
+    function api:SetTitle(t: string) titleLabel.Text = t end
+    function api:SetDescription(d: string) descLabel.Text = d end
+    function api:SetIcon(i) icon.Image = ResolveIcon(i) end
+    function api:SetVisible(v: boolean) holder.Visible = v end
+    function api:Destroy() holder:Destroy() end
+    api._holder = holder
+    api._searchTitle = config.Title or "Button"
+    api._searchDescription = config.Description or ""
+
+    return self:_register(api)
 end
 
 -- ========================================================================
@@ -1512,159 +1646,159 @@ end
 -- ========================================================================
 
 function Category:AddToggle(config: {
-	Title: string?,
-	Description: string?,
-	Default: boolean?,
-	Group: string?,
-	Tooltip: string?,
-	Callback: ((value: boolean) -> ())?,
-	})
-	local theme = self._window._theme
-	local holder, bg = BuildHolder(self._window, self.ContainerScroll, theme, 45, true)
+    Title: string?,
+    Description: string?,
+    Default: boolean?,
+    Group: string?,
+    Tooltip: string?,
+    Callback: ((value: boolean) -> ())?,
+    })
+    local theme = self._window._theme
+    local holder, bg = BuildHolder(self._window, self.ContainerScroll, theme, 45, true)
 
-	local titleLabel, descLabel = BuildInfo(self._window,holder, theme, config.Title or "Toggle", config.Description)
+    local titleLabel, descLabel = BuildInfo(self._window, holder, theme, config.Title or "Toggle", config.Description)
 
-	local toggleFrame = Create("Frame", {
-		Name = "ToggleFrame",
-		AnchorPoint = Vector2.new(1, 0.5),
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		Position = UDim2.fromScale(1, 0.5),
-		Size = UDim2.fromOffset(50, 25),
-		Parent = holder,
-	})
-	Create("UIPadding", {
-		PaddingTop = UDim.new(0, 3),
-		PaddingBottom = UDim.new(0, 3),
-		PaddingLeft = UDim.new(0, 7),
-		PaddingRight = UDim.new(0, 7),
-		Parent = toggleFrame,
-	})
+    local toggleFrame = Create("Frame", {
+        Name = "ToggleFrame",
+        AnchorPoint = Vector2.new(1, 0.5),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Position = UDim2.fromScale(1, 0.5),
+        Size = UDim2.fromOffset(50, 25),
+        Parent = holder,
+    })
+    Create("UIPadding", {
+        PaddingTop = UDim.new(0, 3),
+        PaddingBottom = UDim.new(0, 3),
+        PaddingLeft = UDim.new(0, 7),
+        PaddingRight = UDim.new(0, 7),
+        Parent = toggleFrame,
+    })
 
-	local toggle = Create("Frame", {
-		Name = "Toggle",
-		BackgroundColor3 = theme.ToggleActive,
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		Size = UDim2.fromScale(1, 1),
-		Parent = toggleFrame,
-	})
-	ApplyCorner(toggle, 999)
-	local toggleStroke = Create("UIStroke", { Color = theme.Stroke, Transparency = 0.93, Parent = toggle })
-	Create("UIPadding", {
-		PaddingTop = UDim.new(0, 2),
-		PaddingBottom = UDim.new(0, 2),
-		PaddingLeft = UDim.new(0, 2),
-		PaddingRight = UDim.new(0, 2),
-		Parent = toggle,
-	})
+    local toggle = Create("Frame", {
+        Name = "Toggle",
+        BackgroundColor3 = theme.ToggleActive,
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Size = UDim2.fromScale(1, 1),
+        Parent = toggleFrame,
+    })
+    ApplyCorner(toggle, 999)
+    local toggleStroke = Create("UIStroke", { Color = theme.Stroke, Transparency = 0.93, Parent = toggle })
+    Create("UIPadding", {
+        PaddingTop = UDim.new(0, 2),
+        PaddingBottom = UDim.new(0, 2),
+        PaddingLeft = UDim.new(0, 2),
+        PaddingRight = UDim.new(0, 2),
+        Parent = toggle,
+    })
 
-	local knob = Create("Frame", {
-		Name = "Knob",
-		BackgroundColor3 = theme.ToggleKnob,
-		BorderSizePixel = 0,
-		Size = UDim2.new(0.45, 0, 1, 0),
-		Parent = toggle,
-	})
-	ApplyCorner(knob, 999)
-	Create("UIStroke", { Color = theme.Stroke, Transparency = 0.93, Parent = knob })
-	self._window:_track(toggleStroke, "Color", "Stroke")
+    local knob = Create("Frame", {
+        Name = "Knob",
+        BackgroundColor3 = theme.ToggleKnob,
+        BorderSizePixel = 0,
+        Size = UDim2.new(0.45, 0, 1, 0),
+        Parent = toggle,
+    })
+    ApplyCorner(knob, 999)
+    local knobStroke = Create("UIStroke", { Color = theme.Stroke, Transparency = 0.93, Parent = knob })
+    self._window:_track(toggleStroke, "Color", "Stroke")
+    self._window:_track(knobStroke, "Color", "Stroke")
 
-	local button = Create("TextButton", {
-		Name = "Button",
-		AutoButtonColor = false,
-		BackgroundTransparency = 1,
-		Text = "",
-		Size = UDim2.fromScale(1, 1),
-		ZIndex = 20,
-		Parent = holder,
-	})
+    local button = Create("TextButton", {
+        Name = "Button",
+        AutoButtonColor = false,
+        BackgroundTransparency = 1,
+        Text = "",
+        Size = UDim2.fromScale(1, 1),
+        ZIndex = 20,
+        Parent = holder,
+    })
 
-	WireHover(holder, bg)
+    WireHover(self._window, holder, bg)
 
-	local state = false
+    local state = false
 
-	local function visualUpdate(animate: boolean)
-		local info = animate and MEDIUM or TweenInfo.new(0)
-		if state then
-			TweenService:Create(toggle, info, {
-				BackgroundTransparency = 0,
-				BackgroundColor3 = theme.ToggleActive,
-			}):Play()
-			TweenService:Create(knob, info, {
-				AnchorPoint = Vector2.new(1, 0),
-				Position = UDim2.new(1, 0, 0, 0),
-				BackgroundColor3 = Color3.fromRGB(235, 235, 235),
-			}):Play()
-		else
-			TweenService:Create(toggle, info, { BackgroundTransparency = 1 }):Play()
-			TweenService:Create(knob, info, {
-				AnchorPoint = Vector2.new(0, 0),
-				Position = UDim2.new(0, 0, 0, 0),
-				BackgroundColor3 = theme.ToggleKnob,
-			}):Play()
-		end
-	end
+    local function visualUpdate(animate: boolean)
+        local info = animate and MEDIUM or TweenInfo.new(0)
+        local t = self._window._theme -- her zaman guncel temayi oku
+        if state then
+            TweenService:Create(toggle, info, {
+                BackgroundTransparency = 0,
+                BackgroundColor3 = t.ToggleActive,
+            }):Play()
+            TweenService:Create(knob, info, {
+                AnchorPoint = Vector2.new(1, 0),
+                Position = UDim2.new(1, 0, 0, 0),
+                BackgroundColor3 = t.ToggleKnobActive,
+            }):Play()
+        else
+            TweenService:Create(toggle, info, { BackgroundTransparency = 1 }):Play()
+            TweenService:Create(knob, info, {
+                AnchorPoint = Vector2.new(0, 0),
+                Position = UDim2.new(0, 0, 0, 0),
+                BackgroundColor3 = t.ToggleKnob,
+            }):Play()
+        end
+    end
 
-	local api = {}
+    local api = {}
 
-	function api:Set(value: boolean, silent: boolean?)
-		if state == value then return end
-		state = value
-		visualUpdate(true)
+    function api:Set(value: boolean, silent: boolean?)
+        if state == value then return end
+        state = value
+        visualUpdate(true)
 
-		-- linked group: turning one on turns the rest off
-		if config.Group and value then
-			local group = self._window:_getToggleGroup(config.Group)
-			for _, other in ipairs(group) do
-				if other ~= api and other:Get() then
-					other:Set(false)
-				end
-			end
-		end
+        if config.Group and value then
+            local group = self._window:_getToggleGroup(config.Group)
+            for _, other in ipairs(group) do
+                if other ~= api and other:Get() then
+                    other:Set(false)
+                end
+            end
+        end
 
-		if not silent and config.Callback then
-			task.spawn(config.Callback, state)
-		end
-	end
+        if not silent and config.Callback then
+            task.spawn(config.Callback, state)
+        end
+    end
 
-	function api:Get(): boolean
-		return state
-	end
+    function api:Get(): boolean
+        return state
+    end
 
-	function api:SetTitle(t: string) titleLabel.Text = t end
-	function api:SetDescription(d: string) descLabel.Text = d end
-	function api:SetVisible(v: boolean) holder.Visible = v end
-	function api:Destroy() holder:Destroy() end
-	api._holder = holder
-	api._searchTitle = config.Title or "Toggle"
-	api._window = self._window
+    function api:SetTitle(t: string) titleLabel.Text = t end
+    function api:SetDescription(d: string) descLabel.Text = d end
+    function api:SetVisible(v: boolean) holder.Visible = v end
+    function api:Destroy() holder:Destroy() end
+    api._holder = holder
+    api._searchTitle = config.Title or "Toggle"
+    api._window = self._window
 
-	toggle.MouseEnter:Connect(function()
-		TweenService:Create(toggleStroke, FAST, { Transparency = 0.8 }):Play()
-	end)
-	toggle.MouseLeave:Connect(function()
-		TweenService:Create(toggleStroke, FAST, { Transparency = 0.93 }):Play()
-	end)
-	button.MouseButton1Click:Connect(function()
-		api:Set(not state)
-	end)
+    toggle.MouseEnter:Connect(function()
+        TweenService:Create(toggleStroke, FAST, { Transparency = 0.8 }):Play()
+    end)
+    toggle.MouseLeave:Connect(function()
+        TweenService:Create(toggleStroke, FAST, { Transparency = 0.93 }):Play()
+    end)
+    button.MouseButton1Click:Connect(function()
+        api:Set(not state)
+    end)
 
-	if config.Group then
-		table.insert(self._window:_getToggleGroup(config.Group), api)
-	end
+    if config.Group then
+        table.insert(self._window:_getToggleGroup(config.Group), api)
+    end
 
-	if config.Tooltip then
-		self._window:AttachTooltip(holder, config.Tooltip)
-	end
+    if config.Tooltip then
+        self._window:AttachTooltip(holder, config.Tooltip)
+    end
 
-	-- apply default without firing callback
-	if config.Default then
-		state = true
-		visualUpdate(false)
-	end
+    if config.Default then
+        state = true
+        visualUpdate(false)
+    end
 
-	return self:_register(api)
+    return self:_register(api)
 end
 
 -- ========================================================================
@@ -1760,378 +1894,348 @@ Category.AddSeperator = Category.AddSeparator
 -- ========================================================================
 
 function Category:AddSlider(config: {
-	Title: string?,
-	Description: string?,
-	Min: number?,
-	Max: number?,
-	Default: number?,
-	Increment: number?,
-	Suffix: string?,
-	Tooltip: string?,
-	Callback: ((value: number) -> ())?,
-	})
-	local theme = self._window._theme
+    Title: string?,
+    Description: string?,
+    Min: number?,
+    Max: number?,
+    Default: number?,
+    Increment: number?,
+    Suffix: string?,
+    Tooltip: string?,
+    Callback: ((value: number) -> ())?,
+    })
+    local theme = self._window._theme
 
-	local minValue = config.Min or 0
-	local maxValue = config.Max or 100
+    local minValue = config.Min or 0
+    local maxValue = config.Max or 100
 
-	if maxValue < minValue then
-		minValue, maxValue = maxValue, minValue
-	end
+    if maxValue < minValue then
+        minValue, maxValue = maxValue, minValue
+    end
+    if maxValue == minValue then
+        maxValue = minValue + 1
+    end
 
-	if maxValue == minValue then
-		maxValue = minValue + 1
-	end
+    local increment = math.abs(config.Increment or 1)
+    if increment <= 0 then
+        increment = 1
+    end
 
-	local increment = math.abs(config.Increment or 1)
-	if increment <= 0 then
-		increment = 1
-	end
+    local suffix = config.Suffix or ""
 
-	local suffix = config.Suffix or ""
+    local holder, background = BuildHolder(self._window, self.ContainerScroll, theme, 85, true)
 
-	-- Orijinal tasarımda SliderHolder 85px.
-	local holder, background = BuildHolder(
-		self._window,
-		self.ContainerScroll,
-		theme,
-		85,
-		true
-	)
+    local titleLabel = Create("TextLabel", {
+        Name = "SliderTitle",
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, -85, 0, 20),
+        FontFace = MakeFont("HighwayGothic"),
+        Text = config.Title or "Slider",
+        TextColor3 = theme.PrimaryText,
+        TextSize = 19,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextTruncate = Enum.TextTruncate.AtEnd,
+        RichText = true,
+        Parent = holder,
+    })
+    Create("UIPadding", {
+        PaddingTop = UDim.new(0, 4),
+        PaddingLeft = UDim.new(0, 5),
+        Parent = titleLabel,
+    })
 
-	local titleLabel = Create("TextLabel", {
-		Name = "SliderTitle",
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		Size = UDim2.new(1, -85, 0, 20),
-		FontFace = MakeFont("HighwayGothic"),
-		Text = config.Title or "Slider",
-		TextColor3 = theme.PrimaryText,
-		TextSize = 19,
-		TextXAlignment = Enum.TextXAlignment.Left,
-		TextTruncate = Enum.TextTruncate.AtEnd,
-		RichText = true,
-		Parent = holder,
-	})
+    local descriptionLabel = Create("TextLabel", {
+        Name = "SliderDescription",
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Position = UDim2.fromOffset(0, 20),
+        Size = UDim2.new(1, -10, 0, 25),
+        FontFace = MakeFont("Roboto"),
+        Text = config.Description or "",
+        TextColor3 = theme.SecondaryText,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextTruncate = Enum.TextTruncate.AtEnd,
+        RichText = true,
+        Parent = holder,
+    })
+    Create("UIPadding", {
+        PaddingLeft = UDim.new(0, 5),
+        Parent = descriptionLabel,
+    })
 
-	Create("UIPadding", {
-		PaddingTop = UDim.new(0, 4),
-		PaddingLeft = UDim.new(0, 5),
-		Parent = titleLabel,
-	})
+    local sliderOuter = Create("Frame", {
+        Name = "Slider",
+        AnchorPoint = Vector2.new(0, 1),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        ClipsDescendants = true,
+        Position = UDim2.new(0, 0, 1, -10),
+        Size = UDim2.new(1, 0, 0, 25),
+        Parent = holder,
+    })
+    ApplyCorner(sliderOuter, 15)
+    Create("UIPadding", {
+        PaddingLeft = UDim.new(0, 5),
+        PaddingRight = UDim.new(0, 5),
+        Parent = sliderOuter,
+    })
 
-	local descriptionLabel = Create("TextLabel", {
-		Name = "SliderDescription",
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		Position = UDim2.fromOffset(0, 20),
-		Size = UDim2.new(1, -10, 0, 25),
-		FontFace = MakeFont("Roboto"),
-		Text = config.Description or "",
-		TextColor3 = theme.SecondaryText,
-		TextSize = 14,
-		TextXAlignment = Enum.TextXAlignment.Left,
-		TextTruncate = Enum.TextTruncate.AtEnd,
-		RichText = true,
-		Parent = holder,
-	})
+    local canvas = Create("CanvasGroup", {
+        Name = "CanvasGroup",
+        BackgroundColor3 = theme.SliderEmpty,
+        BorderSizePixel = 0,
+        Size = UDim2.fromScale(1, 1),
+        Parent = sliderOuter,
+    })
+    ApplyCorner(canvas, 15)
 
-	Create("UIPadding", {
-		PaddingLeft = UDim.new(0, 5),
-		Parent = descriptionLabel,
-	})
+    local canvasStroke = Create("UIStroke", {
+        Color = theme.Stroke,
+        Transparency = 0.95,
+        Parent = canvas,
+    })
 
-	local sliderOuter = Create("Frame", {
-		Name = "Slider",
-		AnchorPoint = Vector2.new(0, 1),
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		ClipsDescendants = true,
-		Position = UDim2.new(0, 0, 1, -10),
-		Size = UDim2.new(1, 0, 0, 25),
-		Parent = holder,
-	})
+    -- gorunmez clip: boyutu animasyonla degisen kisim bu
+    local barClip = Create("Frame", {
+        Name = "SliderBarClip",
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        ClipsDescendants = true,
+        Size = UDim2.new(0, 0, 1, 0),
+        Parent = canvas,
+    })
 
-	ApplyCorner(sliderOuter, 15)
+    -- dolgu: HER ZAMAN canvas genisliginde sabit, gradient esnemiyor
+    local fill = Create("Frame", {
+        Name = "SliderFill",
+        BackgroundColor3 = theme.SliderFill,
+        BorderSizePixel = 0,
+        Size = UDim2.new(0, 0, 1, 0),
+        Parent = barClip,
+    })
 
-	Create("UIPadding", {
-		PaddingLeft = UDim.new(0, 5),
-		PaddingRight = UDim.new(0, 5),
-		Parent = sliderOuter,
-	})
+    local sliderGradient = Create("UIGradient", {
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+            ColorSequenceKeypoint.new(1, theme.Accent),
+        }),
+        Parent = fill,
+    })
+    self._window:_trackAccent(sliderGradient, function(accent)
+        sliderGradient.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+            ColorSequenceKeypoint.new(1, accent),
+        })
+    end)
 
-	local canvas = Create("CanvasGroup", {
-		Name = "CanvasGroup",
-		BackgroundColor3 = Color3.fromRGB(34, 62, 67),
-		BorderSizePixel = 0,
-		Size = UDim2.fromScale(1, 1),
-		Parent = sliderOuter,
-	})
+    local function syncFillWidth()
+        fill.Size = UDim2.new(0, canvas.AbsoluteSize.X, 1, 0)
+    end
+    canvas:GetPropertyChangedSignal("AbsoluteSize"):Connect(syncFillWidth)
+    task.defer(syncFillWidth)
 
-	ApplyCorner(canvas, 15)
+    local sliderButton = Create("TextButton", {
+        Name = "SliderBtn",
+        AutoButtonColor = false,
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Text = "",
+        Size = UDim2.fromScale(1, 1),
+        ZIndex = 20,
+        Parent = canvas,
+    })
 
-	local canvasStroke = Create("UIStroke", {
-		Color = theme.Stroke,
-		Transparency = 0.95,
-		Parent = canvas,
-	})
+    local valueText = Create("TextLabel", {
+        Name = "ValueText",
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Size = UDim2.fromScale(1, 1),
+        FontFace = MakeFont("RobotoMono", Enum.FontWeight.Bold),
+        Text = "",
+        TextColor3 = theme.PrimaryText,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Right,
+        ZIndex = 10,
+        Parent = canvas,
+    })
+    Create("UIPadding", {
+        PaddingRight = UDim.new(0, 8),
+        Parent = valueText,
+    })
 
-	local sliderBar = Create("Frame", {
-		Name = "SliderBar",
-		BackgroundColor3 = theme.SliderFill,
-		BorderSizePixel = 0,
-		Size = UDim2.new(0, 0, 1, 0),
-		Parent = canvas,
-	})
+    WireHover(self._window, holder, background)
 
-	local sliderGradient = Create("UIGradient", {
-		Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-			ColorSequenceKeypoint.new(1, theme.Accent),
-		}),
-		Parent = sliderBar,
-	})
-	self._window:_trackAccent(sliderGradient, function(accent)
-		sliderGradient.Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-			ColorSequenceKeypoint.new(1, accent),
-		})
-	end)
+    self._window:_track(titleLabel, "TextColor3", "PrimaryText")
+    self._window:_track(descriptionLabel, "TextColor3", "SecondaryText")
+    self._window:_track(canvasStroke, "Color", "Stroke")
+    self._window:_track(canvas, "BackgroundColor3", "SliderEmpty")
+    self._window:_track(fill, "BackgroundColor3", "SliderFill")
+    self._window:_track(valueText, "TextColor3", "PrimaryText")
 
-	local sliderButton = Create("TextButton", {
-		Name = "SliderBtn",
-		AutoButtonColor = false,
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		Text = "",
-		Size = UDim2.fromScale(1, 1),
-		ZIndex = 20,
-		Parent = canvas,
-	})
+    local value = minValue
+    local activeTween: Tween? = nil
+    local dragging = false
+    local activeTouch: InputObject? = nil
+    local connections: {RBXScriptConnection} = {}
 
-	local valueText = Create("TextLabel", {
-		Name = "ValueText",
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		Size = UDim2.fromScale(1, 1),
-		FontFace = MakeFont("RobotoMono", Enum.FontWeight.Bold),
-		Text = "",
-		TextColor3 = Color3.fromRGB(255, 255, 255),
-		TextSize = 14,
-		TextXAlignment = Enum.TextXAlignment.Right,
-		ZIndex = 10,
-		Parent = canvas,
-	})
+    local function decimalPlaces(numberValue: number): number
+        local stringValue = tostring(numberValue)
+        local decimal = string.match(stringValue, "%.(%d+)")
+        if decimal then
+            return #decimal
+        end
+        return 0
+    end
 
-	Create("UIPadding", {
-		PaddingRight = UDim.new(0, 8),
-		Parent = valueText,
-	})
+    local precision = math.min(decimalPlaces(increment), 6)
 
-	WireHover(holder, background)
+    local function snap(rawValue: number): number
+        local clamped = math.clamp(rawValue, minValue, maxValue)
+        local stepped = math.floor(((clamped - minValue) / increment) + 0.5) * increment + minValue
+        local multiplier = 10 ^ precision
+        stepped = math.floor(stepped * multiplier + 0.5) / multiplier
+        return math.clamp(stepped, minValue, maxValue)
+    end
 
-	self._window:_track(titleLabel, "TextColor3", "PrimaryText")
-	self._window:_track(descriptionLabel, "TextColor3", "SecondaryText")
-	self._window:_track(canvasStroke, "Color", "Stroke")
-	self._window:_track(sliderBar, "BackgroundColor3", "SliderFill")
+    local function formatNumber(numberValue: number): string
+        if precision <= 0 then
+            return tostring(math.floor(numberValue + 0.5))
+        end
+        return string.format("%." .. tostring(precision) .. "f", numberValue)
+    end
 
-	local value = minValue
-	local activeTween: Tween? = nil
-	local dragging = false
-	local activeTouch: InputObject? = nil
-	local connections: {RBXScriptConnection} = {}
+    local function getAlpha(): number
+        return math.clamp((value - minValue) / (maxValue - minValue), 0, 1)
+    end
 
-	local function decimalPlaces(numberValue: number): number
-		local stringValue = tostring(numberValue)
-		local decimal = string.match(stringValue, "%.(%d+)")
+    local function updateVisual(animate: boolean)
+        local targetSize = UDim2.new(getAlpha(), 0, 1, 0)
 
-		if decimal then
-			return #decimal
-		end
+        if activeTween then
+            activeTween:Cancel()
+            activeTween = nil
+        end
 
-		return 0
-	end
+        if animate then
+            activeTween = TweenService:Create(
+                barClip,
+                TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                { Size = targetSize }
+            )
+            activeTween:Play()
+        else
+            barClip.Size = targetSize
+        end
 
-	local precision = math.min(decimalPlaces(increment), 6)
+        valueText.Text = string.format(
+            "%s/%s%s",
+            formatNumber(value),
+            formatNumber(maxValue),
+            suffix
+        )
+    end
 
-	local function snap(rawValue: number): number
-		local clamped = math.clamp(rawValue, minValue, maxValue)
-		local stepped = math.floor(
-			((clamped - minValue) / increment) + 0.5
-		) * increment + minValue
+    local api = {}
 
-		local multiplier = 10 ^ precision
-		stepped = math.floor(stepped * multiplier + 0.5) / multiplier
+    local function setValue(newValue: number, silent: boolean?, animate: boolean?)
+        local snapped = snap(newValue)
+        local changed = snapped ~= value
 
-		return math.clamp(stepped, minValue, maxValue)
-	end
+        value = snapped
+        updateVisual(animate == true)
 
-	local function formatNumber(numberValue: number): string
-		if precision <= 0 then
-			return tostring(math.floor(numberValue + 0.5))
-		end
+        if changed and not silent and config.Callback then
+            task.spawn(config.Callback, value)
+        end
+    end
 
-		return string.format("%." .. tostring(precision) .. "f", numberValue)
-	end
+    function api:Set(newValue: number, silent: boolean?)
+        setValue(newValue, silent, true)
+    end
 
-	local function getAlpha(): number
-		return math.clamp(
-			(value - minValue) / (maxValue - minValue),
-			0,
-			1
-		)
-	end
+    function api:Get(): number
+        return value
+    end
 
-	local function updateVisual(animate: boolean)
-		local targetSize = UDim2.new(getAlpha(), 0, 1, 0)
+    function api:SetTitle(text: string)
+        titleLabel.Text = text
+    end
 
-		if activeTween then
-			activeTween:Cancel()
-			activeTween = nil
-		end
+    function api:SetDescription(text: string)
+        descriptionLabel.Text = text
+    end
 
-		if animate then
-			activeTween = TweenService:Create(
-				sliderBar,
-				TweenInfo.new(
-					0.12,
-					Enum.EasingStyle.Quad,
-					Enum.EasingDirection.Out
-				),
-				{ Size = targetSize }
-			)
+    function api:SetVisible(visible: boolean)
+        holder.Visible = visible
+    end
 
-			activeTween:Play()
-		else
-			sliderBar.Size = targetSize
-		end
+    function api:Destroy()
+        if activeTween then
+            activeTween:Cancel()
+            activeTween = nil
+        end
+        for _, connection in ipairs(connections) do
+            connection:Disconnect()
+        end
+        table.clear(connections)
+        holder:Destroy()
+    end
 
-		valueText.Text = string.format(
-			"%s/%s%s",
-			formatNumber(value),
-			formatNumber(maxValue),
-			suffix
-		)
-	end
+    api._holder = holder
+    api._searchTitle = config.Title or "Slider"
+    api._searchDescription = config.Description or ""
 
-	local api = {}
+    local function updateFromX(xPosition: number)
+        local width = canvas.AbsoluteSize.X
+        if width <= 0 then
+            return
+        end
+        local alpha = math.clamp((xPosition - canvas.AbsolutePosition.X) / width, 0, 1)
+        -- animate = true: surukleme artik tween'li kayiyor
+        setValue(minValue + alpha * (maxValue - minValue), false, true)
+    end
 
-	local function setValue(
-		newValue: number,
-		silent: boolean?,
-		animate: boolean?
-	)
-		local snapped = snap(newValue)
-		local changed = snapped ~= value
+    table.insert(connections, sliderButton.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            activeTouch = nil
+            updateFromX(input.Position.X)
+        elseif input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            activeTouch = input
+            updateFromX(input.Position.X)
+        end
+    end))
 
-		value = snapped
-		updateVisual(animate == true)
+    table.insert(connections, UserInputService.InputChanged:Connect(function(input)
+        if not dragging then
+            return
+        end
+        if input.UserInputType == Enum.UserInputType.MouseMovement and activeTouch == nil then
+            updateFromX(input.Position.X)
+        elseif input.UserInputType == Enum.UserInputType.Touch and input == activeTouch then
+            updateFromX(input.Position.X)
+        end
+    end))
 
-		if changed and not silent and config.Callback then
-			task.spawn(config.Callback, value)
-		end
-	end
+    table.insert(connections, UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 and activeTouch == nil then
+            dragging = false
+        elseif input.UserInputType == Enum.UserInputType.Touch and input == activeTouch then
+            dragging = false
+            activeTouch = nil
+        end
+    end))
 
-	function api:Set(newValue: number, silent: boolean?)
-		setValue(newValue, silent, true)
-	end
+    if config.Tooltip then
+        self._window:AttachTooltip(holder, config.Tooltip)
+    end
 
-	function api:Get(): number
-		return value
-	end
+    setValue(config.Default or minValue, true, false)
 
-	function api:SetTitle(text: string)
-		titleLabel.Text = text
-	end
-
-	function api:SetDescription(text: string)
-		descriptionLabel.Text = text
-	end
-
-	function api:SetVisible(visible: boolean)
-		holder.Visible = visible
-	end
-
-	function api:Destroy()
-		if activeTween then
-			activeTween:Cancel()
-			activeTween = nil
-		end
-
-		for _, connection in ipairs(connections) do
-			connection:Disconnect()
-		end
-
-		table.clear(connections)
-		holder:Destroy()
-	end
-
-	api._holder = holder
-	api._searchTitle = config.Title or "Slider"
-	api._searchDescription = config.Description or ""
-
-	local function updateFromX(xPosition: number)
-		local width = canvas.AbsoluteSize.X
-		if width <= 0 then
-			return
-		end
-
-		local alpha = math.clamp(
-			(xPosition - canvas.AbsolutePosition.X) / width,
-			0,
-			1
-		)
-		setValue(
-			minValue + alpha * (maxValue - minValue),
-			false,
-			false
-		)
-	end
-
-	table.insert(connections, sliderButton.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			dragging = true
-			activeTouch = nil
-			updateFromX(input.Position.X)
-		elseif input.UserInputType == Enum.UserInputType.Touch then
-			dragging = true
-			activeTouch = input
-			updateFromX(input.Position.X)
-		end
-	end))
-
-	table.insert(connections, UserInputService.InputChanged:Connect(function(input)
-		if not dragging then
-			return
-		end
-
-		if input.UserInputType == Enum.UserInputType.MouseMovement
-			and activeTouch == nil then
-			updateFromX(input.Position.X)
-		elseif input.UserInputType == Enum.UserInputType.Touch
-			and input == activeTouch then
-			updateFromX(input.Position.X)
-		end
-	end))
-
-	table.insert(connections, UserInputService.InputEnded:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1
-			and activeTouch == nil then
-			dragging = false
-		elseif input.UserInputType == Enum.UserInputType.Touch
-			and input == activeTouch then
-			dragging = false
-			activeTouch = nil
-		end
-	end))
-
-	if config.Tooltip then
-		self._window:AttachTooltip(holder, config.Tooltip)
-	end
-
-	setValue(config.Default or minValue, true, false)
-
-	return self:_register(api)
+    return self:_register(api)
 end
 
 -- ========================================================================
@@ -2139,100 +2243,109 @@ end
 -- ========================================================================
 
 function Category:AddInput(config: {
-	Title: string?,
-	Description: string?,
-	Placeholder: string?,
-	Default: string?,
-	ClearOnFocus: boolean?,
-	Tooltip: string?,
-	Callback: ((text: string) -> ())?,
-	})
-	local theme = self._window._theme
-	local holder, bg = BuildHolder(self._window, self.ContainerScroll, theme, 45, true)
+    Title: string?,
+    Description: string?,
+    Placeholder: string?,
+    Default: string?,
+    ClearOnFocus: boolean?,
+    Tooltip: string?,
+    Callback: ((text: string) -> ())?,
+    })
+    local theme = self._window._theme
+    local holder, bg = BuildHolder(self._window, self.ContainerScroll, theme, 45, true)
 
-	local titleLabel, descLabel = BuildInfo(self._window,holder, theme, config.Title or "Input", config.Description)
+    local titleLabel, descLabel = BuildInfo(self._window, holder, theme, config.Title or "Input", config.Description)
 
-	local inputFrame = Create("Frame", {
-		Name = "InputFrame",
-		AnchorPoint = Vector2.new(1, 0.5),
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		Position = UDim2.fromScale(1, 0.5),
-		Size = UDim2.fromOffset(70, 25),
-		Parent = holder,
-	})
-	Create("UIPadding", {
-		PaddingTop = UDim.new(0, 3),
-		PaddingBottom = UDim.new(0, 3),
-		PaddingLeft = UDim.new(0, 7),
-		PaddingRight = UDim.new(0, 7),
-		Parent = inputFrame,
-	})
+    local inputFrame = Create("Frame", {
+        Name = "InputFrame",
+        AnchorPoint = Vector2.new(1, 0.5),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Position = UDim2.fromScale(1, 0.5),
+        Size = UDim2.fromOffset(70, 25),
+        Parent = holder,
+    })
+    Create("UIPadding", {
+        PaddingTop = UDim.new(0, 3),
+        PaddingBottom = UDim.new(0, 3),
+        PaddingLeft = UDim.new(0, 7),
+        PaddingRight = UDim.new(0, 7),
+        Parent = inputFrame,
+    })
 
-	local inputBox = Create("Frame", {
-		Name = "Input",
-		BackgroundColor3 = Color3.fromRGB(38, 69, 77),
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		Size = UDim2.fromScale(1, 1),
-		Parent = inputFrame,
-	})
-	ApplyCorner(inputBox, 4)
-	local inputStroke = Create("UIStroke", { Color = theme.Stroke, Transparency = 0.93, Parent = inputBox })
-	Create("UIPadding", {
-		PaddingTop = UDim.new(0, 2),
-		PaddingBottom = UDim.new(0, 2),
-		PaddingLeft = UDim.new(0, 4),
-		PaddingRight = UDim.new(0, 4),
-		Parent = inputBox,
-	})
-	self._window:_track(inputStroke, "Color", "Stroke")
+    local inputBox = Create("Frame", {
+        Name = "Input",
+        BackgroundColor3 = theme.HolderColor,
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Size = UDim2.fromScale(1, 1),
+        Parent = inputFrame,
+    })
+    ApplyCorner(inputBox, 4)
+    local inputStroke = Create("UIStroke", { Color = theme.Stroke, Transparency = 0.93, Parent = inputBox })
+    Create("UIPadding", {
+        PaddingTop = UDim.new(0, 2),
+        PaddingBottom = UDim.new(0, 2),
+        PaddingLeft = UDim.new(0, 4),
+        PaddingRight = UDim.new(0, 4),
+        Parent = inputBox,
+    })
+    self._window:_track(inputStroke, "Color", "Stroke")
 
-	local textBox = Create("TextBox", {
-		Name = "InputText",
-		BackgroundTransparency = 1,
-		Size = UDim2.fromScale(1, 1),
-		FontFace = MakeFont("Arial"),
-		PlaceholderText = config.Placeholder or "Input",
-		Text = config.Default or "",
-		ClearTextOnFocus = config.ClearOnFocus or false,
-		TextColor3 = Color3.fromRGB(255, 255, 255),
-		TextSize = 14,
-		Parent = inputBox,
-	})
+    local textBox = Create("TextBox", {
+        Name = "InputText",
+        BackgroundTransparency = 1,
+        Size = UDim2.fromScale(1, 1),
+        FontFace = MakeFont("Arial"),
+        PlaceholderText = config.Placeholder or "Input",
+        PlaceholderColor3 = theme.SecondaryText,
+        Text = config.Default or "",
+        ClearTextOnFocus = config.ClearOnFocus or false,
+        TextColor3 = theme.PrimaryText,
+        TextScaled = true,
+        Parent = inputBox,
+    })
+    -- TextScaled buyumesin diye tavan koyuyoruz, sadece sigmayinca kuculur
+    Create("UITextSizeConstraint", {
+        MaxTextSize = 14,
+        MinTextSize = 8,
+        Parent = textBox,
+    })
+    self._window:_track(textBox, "TextColor3", "PrimaryText")
+    self._window:_track(textBox, "PlaceholderColor3", "SecondaryText")
 
-	WireHover(holder, bg)
+    WireHover(self._window, holder, bg)
 
-	local api = {}
-	function api:Set(text: string, silent: boolean?)
-		textBox.Text = text
-		if not silent and config.Callback then
-			task.spawn(config.Callback, text)
-		end
-	end
-	function api:Get(): string return textBox.Text end
-	function api:SetTitle(t: string) titleLabel.Text = t end
-	function api:SetDescription(d: string) descLabel.Text = d end
-	function api:SetVisible(v: boolean) holder.Visible = v end
-	function api:Destroy() holder:Destroy() end
-	api._holder = holder
-	api._searchTitle = config.Title or "Input"
+    local api = {}
+    function api:Set(text: string, silent: boolean?)
+        textBox.Text = text
+        if not silent and config.Callback then
+            task.spawn(config.Callback, text)
+        end
+    end
+    function api:Get(): string return textBox.Text end
+    function api:SetTitle(t: string) titleLabel.Text = t end
+    function api:SetDescription(d: string) descLabel.Text = d end
+    function api:SetVisible(v: boolean) holder.Visible = v end
+    function api:Destroy() holder:Destroy() end
+    api._holder = holder
+    api._searchTitle = config.Title or "Input"
 
-	textBox.Focused:Connect(function()
-		TweenService:Create(inputStroke, FAST, { Transparency = 0.65 }):Play()
-	end)
-	textBox.FocusLost:Connect(function()
-		TweenService:Create(inputStroke, FAST, { Transparency = 0.93 }):Play()
-		if config.Callback then
-			task.spawn(config.Callback, textBox.Text)
-		end
-	end)
+    textBox.Focused:Connect(function()
+        TweenService:Create(inputStroke, FAST, { Transparency = 0.65 }):Play()
+    end)
+    textBox.FocusLost:Connect(function()
+        TweenService:Create(inputStroke, FAST, { Transparency = 0.93 }):Play()
+        if config.Callback then
+            task.spawn(config.Callback, textBox.Text)
+        end
+    end)
 
-	if config.Tooltip then
-		self._window:AttachTooltip(holder, config.Tooltip)
-	end
+    if config.Tooltip then
+        self._window:AttachTooltip(holder, config.Tooltip)
+    end
 
-	return self:_register(api)
+    return self:_register(api)
 end
 
 -- ========================================================================
@@ -2250,113 +2363,127 @@ local KeyNames = {
 }
 
 function Category:AddKeybind(config: {
-	Title: string?,
-	Description: string?,
-	Default: Enum.KeyCode?,
-	Tooltip: string?,
-	Callback: ((key: Enum.KeyCode) -> ())?,
-	ChangedCallback: ((key: Enum.KeyCode) -> ())?,
-	})
-	local theme = self._window._theme
-	local holder, bg = BuildHolder(self._window, self.ContainerScroll, theme, 45, true)
+    Title: string?,
+    Description: string?,
+    Default: Enum.KeyCode?,
+    Tooltip: string?,
+    Callback: ((key: Enum.KeyCode) -> ())?,
+    ChangedCallback: ((key: Enum.KeyCode) -> ())?,
+    })
+    local theme = self._window._theme
+    local holder, bg = BuildHolder(self._window, self.ContainerScroll, theme, 45, true)
 
-	local titleLabel, descLabel = BuildInfo(self._window,holder, theme, config.Title or "Keybind", config.Description)
+    local titleLabel, descLabel = BuildInfo(self._window, holder, theme, config.Title or "Keybind", config.Description)
 
-	local keybindFrame = Create("Frame", {
-		Name = "KeybindFrame",
-		AnchorPoint = Vector2.new(1, 0.5),
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		Position = UDim2.new(1, -7, 0.5, 0),
-		Size = UDim2.fromOffset(35, 35),
-		Parent = holder,
-	})
+    local keybindFrame = Create("Frame", {
+        Name = "KeybindFrame",
+        AnchorPoint = Vector2.new(1, 0.5),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Position = UDim2.new(1, -7, 0.5, 0),
+        Size = UDim2.fromOffset(48, 30),
+        Parent = holder,
+    })
 
-	local keybind = Create("Frame", {
-		Name = "Keybind",
-		BackgroundColor3 = Color3.fromRGB(38, 69, 77),
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		Size = UDim2.fromScale(1, 1),
-		Parent = keybindFrame,
-	})
-	ApplyCorner(keybind, 4)
-	local keybindStroke = Create("UIStroke", { Color = theme.Stroke, Transparency = 0.93, Parent = keybind })
-	self._window:_track(keybindStroke, "Color", "Stroke")
+    local keybind = Create("Frame", {
+        Name = "Keybind",
+        BackgroundColor3 = theme.HolderColor,
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Size = UDim2.fromScale(1, 1),
+        Parent = keybindFrame,
+    })
+    ApplyCorner(keybind, 4)
+    local keybindStroke = Create("UIStroke", { Color = theme.Stroke, Transparency = 0.93, Parent = keybind })
+    self._window:_track(keybindStroke, "Color", "Stroke")
 
-	local setBtn = Create("TextButton", {
-		Name = "SetKeybindBtn",
-		BackgroundTransparency = 1,
-		Size = UDim2.fromScale(1, 1),
-		FontFace = MakeFont("Nunito", Enum.FontWeight.Bold),
-		Text = "K",
-		TextColor3 = Color3.fromRGB(153, 153, 153),
-		TextSize = 23,
-		TextWrapped = true,
-		Parent = keybind,
-	})
+    local setBtn = Create("TextButton", {
+        Name = "SetKeybindBtn",
+        BackgroundTransparency = 1,
+        Size = UDim2.fromScale(1, 1),
+        FontFace = MakeFont("RobotoMono", Enum.FontWeight.Bold),
+        Text = "K",
+        TextColor3 = theme.SecondaryText,
+        TextScaled = true,
+        Parent = keybind,
+    })
+    Create("UITextSizeConstraint", {
+        MaxTextSize = 15,
+        MinTextSize = 8,
+        Parent = setBtn,
+    })
+    Create("UIPadding", {
+        PaddingTop = UDim.new(0, 4),
+        PaddingBottom = UDim.new(0, 4),
+        PaddingLeft = UDim.new(0, 4),
+        PaddingRight = UDim.new(0, 4),
+        Parent = setBtn,
+    })
+    self._window:_track(setBtn, "TextColor3", "SecondaryText")
 
-	WireHover(holder, bg)
+    WireHover(self._window, holder, bg)
 
-	local currentKey = config.Default or Enum.KeyCode.K
-	local listening = false
+    local currentKey = config.Default or Enum.KeyCode.K
+    local listening = false
 
-	local function keyLabel(key: Enum.KeyCode): string
-		return KeyNames[key] or key.Name
-	end
+    local function keyLabel(key: Enum.KeyCode): string
+        return KeyNames[key] or key.Name
+    end
 
-	local function updateVisual()
-		setBtn.Text = listening and "..." or keyLabel(currentKey)
-	end
+    local function updateVisual()
+        setBtn.Text = listening and "..." or keyLabel(currentKey)
+    end
 
-	local api = {}
-	function api:Set(key: Enum.KeyCode, silent: boolean?)
-		currentKey = key
-		updateVisual()
-		if not silent and config.ChangedCallback then
-			task.spawn(config.ChangedCallback, key)
-		end
-	end
-	function api:Get(): Enum.KeyCode return currentKey end
-	function api:SetTitle(t: string) titleLabel.Text = t end
-	function api:SetDescription(d: string) descLabel.Text = d end
-	function api:SetVisible(v: boolean) holder.Visible = v end
-	api._holder = holder
-	api._searchTitle = config.Title or "Keybind"
+    local api = {}
+    function api:Set(key: Enum.KeyCode, silent: boolean?)
+        currentKey = key
+        updateVisual()
+        if not silent and config.ChangedCallback then
+            task.spawn(config.ChangedCallback, key)
+        end
+    end
+    function api:Get(): Enum.KeyCode return currentKey end
+    function api:SetTitle(t: string) titleLabel.Text = t end
+    function api:SetDescription(d: string) descLabel.Text = d end
+    function api:SetVisible(v: boolean) holder.Visible = v end
+    api._holder = holder
+    api._searchTitle = config.Title or "Keybind"
 
-	setBtn.MouseButton1Click:Connect(function()
-		listening = true
-		updateVisual()
-	end)
+    setBtn.MouseButton1Click:Connect(function()
+        listening = true
+        updateVisual()
+        TweenService:Create(keybindStroke, FAST, { Transparency = 0.55 }):Play()
+    end)
 
-	local inputConn = UserInputService.InputBegan:Connect(function(input, processed)
-		if listening then
-			if input.UserInputType == Enum.UserInputType.Keyboard then
-				listening = false
-				api:Set(input.KeyCode)
-			end
-			return
-		end
+    local inputConn = UserInputService.InputBegan:Connect(function(input, processed)
+        if listening then
+            if input.UserInputType == Enum.UserInputType.Keyboard then
+                listening = false
+                api:Set(input.KeyCode)
+                TweenService:Create(keybindStroke, FAST, { Transparency = 0.93 }):Play()
+            end
+            return
+        end
 
-		if processed then return end
-		if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == currentKey then
-			if config.Callback then
-				task.spawn(config.Callback, currentKey)
-			end
-		end
-	end)
+        if processed then return end
+        if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == currentKey then
+            if config.Callback then
+                task.spawn(config.Callback, currentKey)
+            end
+        end
+    end)
 
-	function api:Destroy()
+    function api:Destroy()
         inputConn:Disconnect()
         holder:Destroy()
     end
 
-	if config.Tooltip then
-		self._window:AttachTooltip(holder, config.Tooltip)
-	end
+    if config.Tooltip then
+        self._window:AttachTooltip(holder, config.Tooltip)
+    end
 
-	updateVisual()
-	return self:_register(api)
+    updateVisual()
+    return self:_register(api)
 end
 
 -- ========================================================================
@@ -2364,496 +2491,525 @@ end
 -- ========================================================================
 
 function Category:AddDropdown(config: {
-	Title: string?,
-	Description: string?,
-	Values: {string}?,
-	Default: (string | {string})?,
-	Multi: boolean?,
-	Searchable: boolean?,
-	Tooltip: string?,
-	Callback: ((selected: any) -> ())?,
-	})
-	local theme = self._window._theme
-	local values = config.Values or {}
-	local multi = config.Multi or false
-	local searchable = config.Searchable ~= false -- default true
+    Title: string?,
+    Description: string?,
+    Values: {string}?,
+    Default: (string | {string})?,
+    Multi: boolean?,
+    Searchable: boolean?,
+    Tooltip: string?,
+    Callback: ((selected: any) -> ())?,
+    })
+    local window = self._window
+    local theme = window._theme
+    local values = config.Values or {}
+    local multi = config.Multi or false
+    local searchable = config.Searchable ~= false -- default true
 
-	local holder = Create("Frame", {
-		Name = "DropdownHolder",
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		ClipsDescendants = true,
-		Size = UDim2.new(1, 0, 0, 45),
-		Parent = self.ContainerScroll,
-	})
-	ApplyCorner(holder, 4)
-	Create("UIGradient", {
-		Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, theme.GradientTop),
-			ColorSequenceKeypoint.new(1, theme.GradientBottom),
-		}),
-		Parent = holder,
-	})
-	local dropStroke = Create("UIStroke", { Color = theme.Stroke, Transparency = 0.9, Parent = holder })
-	self._window:_track(dropStroke, "Color", "Stroke")
+    local holder = Create("Frame", {
+        Name = "DropdownHolder",
+        BackgroundColor3 = theme.HolderColor,
+        BackgroundTransparency = theme.HolderTransparency,
+        BorderSizePixel = 0,
+        ClipsDescendants = true,
+        Size = UDim2.new(1, 0, 0, 45),
+        Parent = self.ContainerScroll,
+    })
+    ApplyCorner(holder, 4)
+    window:_track(holder, "BackgroundColor3", "HolderColor")
+    window:_track(holder, "BackgroundTransparency", "HolderTransparency")
 
-	-- top bar (title, desc, collapse arrow)
-	local topBar = Create("Frame", {
-		Name = "TopBar",
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		Size = UDim2.new(1, 0, 0, 45),
-		Parent = holder,
-	})
-	Create("UIStroke", { Color = theme.Stroke, Transparency = 0.9, Parent = topBar })
+    local holderGradient = Create("UIGradient", {
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, theme.GradientTop),
+            ColorSequenceKeypoint.new(1, theme.GradientBottom),
+        }),
+        Parent = holder,
+    })
+    window:_trackGradient(holderGradient, "GradientTop", "GradientBottom")
 
-	local titleLabel = Create("TextLabel", {
-		Name = "DropdownTitle",
-		BackgroundTransparency = 1,
-		Size = UDim2.new(1, -85, 0, 20),
-		FontFace = MakeFont("HighwayGothic"),
-		Text = config.Title or "Dropdown",
-		TextColor3 = theme.PrimaryText,
-		TextSize = 19,
-		TextXAlignment = Enum.TextXAlignment.Left,
-		TextTruncate = Enum.TextTruncate.AtEnd,
-		RichText = true,
-		Parent = topBar,
-	})
-	Create("UIPadding", { PaddingTop = UDim.new(0, 4), PaddingLeft = UDim.new(0, 5), Parent = titleLabel })
-	self._window:_track(titleLabel, "TextColor3", "PrimaryText")
+    local dropStroke = Create("UIStroke", { Color = theme.Stroke, Transparency = 0.9, Parent = holder })
+    window:_track(dropStroke, "Color", "Stroke")
 
-	local descLabel = Create("TextLabel", {
-		Name = "DropdownDescription",
-		AnchorPoint = Vector2.new(0, 1),
-		BackgroundTransparency = 1,
-		Position = UDim2.fromScale(0, 1),
-		Size = UDim2.new(1, -85, 0, 25),
-		FontFace = MakeFont("Roboto"),
-		Text = config.Description or "",
-		TextColor3 = theme.SecondaryText,
-		TextSize = 14,
-		TextXAlignment = Enum.TextXAlignment.Left,
-		TextTruncate = Enum.TextTruncate.AtEnd,
-		RichText = true,
-		Parent = topBar,
-	})
-	Create("UIPadding", { PaddingLeft = UDim.new(0, 5), Parent = descLabel })
-	self._window:_track(descLabel, "TextColor3", "SecondaryText")
+    -- top bar (title, desc, collapse arrow)
+    local topBar = Create("Frame", {
+        Name = "TopBar",
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 0, 45),
+        Parent = holder,
+    })
+    local topBarStroke = Create("UIStroke", { Color = theme.Stroke, Transparency = 0.9, Parent = topBar })
+    window:_track(topBarStroke, "Color", "Stroke")
 
-	local collapseHolder = Create("Frame", {
-		Name = "DropdownCollapseHolder",
-		AnchorPoint = Vector2.new(1, 0.5),
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		Position = UDim2.new(1, -5, 0.5, 0),
-		Size = UDim2.fromOffset(27, 27),
-		Parent = topBar,
-	})
-	local collapseArrow = Create("ImageButton", {
-		Name = "DropdownCollapse",
-		BackgroundTransparency = 1,
-		Size = UDim2.fromScale(1, 1),
-		Image = ResolveIcon(10709790948),
-		Parent = collapseHolder,
-	})
+    local titleLabel = Create("TextLabel", {
+        Name = "DropdownTitle",
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, -85, 0, 20),
+        FontFace = MakeFont("HighwayGothic"),
+        Text = config.Title or "Dropdown",
+        TextColor3 = theme.PrimaryText,
+        TextSize = 19,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextTruncate = Enum.TextTruncate.AtEnd,
+        RichText = true,
+        Parent = topBar,
+    })
+    Create("UIPadding", { PaddingTop = UDim.new(0, 4), PaddingLeft = UDim.new(0, 5), Parent = titleLabel })
+    window:_track(titleLabel, "TextColor3", "PrimaryText")
 
-	local topClick = Create("TextButton", {
-		Name = "TopClick",
-		BackgroundTransparency = 1,
-		Text = "",
-		Size = UDim2.fromScale(1, 1),
-		ZIndex = 10,
-		Parent = topBar,
-	})
+    local descLabel = Create("TextLabel", {
+        Name = "DropdownDescription",
+        AnchorPoint = Vector2.new(0, 1),
+        BackgroundTransparency = 1,
+        Position = UDim2.fromScale(0, 1),
+        Size = UDim2.new(1, -85, 0, 25),
+        FontFace = MakeFont("Roboto"),
+        Text = config.Description or "",
+        TextColor3 = theme.SecondaryText,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextTruncate = Enum.TextTruncate.AtEnd,
+        RichText = true,
+        Parent = topBar,
+    })
+    Create("UIPadding", { PaddingLeft = UDim.new(0, 5), Parent = descLabel })
+    window:_track(descLabel, "TextColor3", "SecondaryText")
 
-	-- search bar
-	local searchHolder, searchInput, clearBtn, searchStroke
-	if searchable then
-		searchHolder = Create("Frame", {
-			Name = "DropdownSearchHolder",
-			AnchorPoint = Vector2.new(0.5, 0),
-			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-			BackgroundTransparency = 0.9,
-			BorderSizePixel = 0,
-			ClipsDescendants = true,
-			Position = UDim2.new(0.5, 0, 0, 53),
-			Size = UDim2.new(1, -10, 0, 25),
-			Parent = holder,
-		})
-		ApplyCorner(searchHolder, 3)
-		Create("UIGradient", {
-			Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-				ColorSequenceKeypoint.new(0.5, Color3.fromRGB(80, 86, 89)),
-				ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255)),
-			}),
-			Parent = searchHolder,
-		})
-		searchStroke = Create("UIStroke", { Color = Color3.fromRGB(230, 230, 230), Transparency = 0.9, Parent = searchHolder })
-		Create("UIPadding", {
-			PaddingTop = UDim.new(0, 2), PaddingBottom = UDim.new(0, 2),
-			PaddingLeft = UDim.new(0, 5), PaddingRight = UDim.new(0, 22),
-			Parent = searchHolder,
-		})
-		Create("ImageLabel", {
-			Name = "DropdownSearchIcon",
-			AnchorPoint = Vector2.new(0, 0.5),
-			BackgroundTransparency = 1,
-			Position = UDim2.fromScale(0, 0.5),
-			Size = UDim2.fromOffset(20, 20),
-			Image = ResolveIcon(10734943674),
-			Parent = searchHolder,
-		})
-		searchInput = Create("TextBox", {
-			Name = "DropdownSearchInput",
-			BackgroundTransparency = 1,
-			Position = UDim2.fromOffset(23, 0),
-			Size = UDim2.new(1, -40, 1, 0),
-			FontFace = MakeFont("Arial"),
-			PlaceholderText = "Search...",
-			Text = "",
-			TextColor3 = Color3.fromRGB(230, 230, 230),
-			TextSize = 16,
-			TextXAlignment = Enum.TextXAlignment.Left,
-			Parent = searchHolder,
-		})
-		clearBtn = Create("ImageButton", {
-			Name = "ClearBtn",
-			AnchorPoint = Vector2.new(0, 0.5),
-			BackgroundTransparency = 1,
-			Position = UDim2.new(1, -5, 0.5, 0),
-			Size = UDim2.fromOffset(20, 20),
-			Image = ResolveIcon(10723346158),
-			Parent = searchHolder,
-		})
-	end
+    local collapseHolder = Create("Frame", {
+        Name = "DropdownCollapseHolder",
+        AnchorPoint = Vector2.new(1, 0.5),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Position = UDim2.new(1, -5, 0.5, 0),
+        Size = UDim2.fromOffset(27, 27),
+        Parent = topBar,
+    })
+    local collapseArrow = Create("ImageButton", {
+        Name = "DropdownCollapse",
+        BackgroundTransparency = 1,
+        Size = UDim2.fromScale(1, 1),
+        Image = ResolveIcon(10709790948),
+        Parent = collapseHolder,
+    })
 
-	-- separator line under search / topbar
-	Create("Frame", {
-		Name = "DropdownSeperatorFrame",
-		AnchorPoint = Vector2.new(0.5, 0),
-		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-		BackgroundTransparency = 0.9,
-		BorderSizePixel = 0,
-		Position = UDim2.new(0.5, 0, 0, searchable and 85 or 47),
-		Size = UDim2.new(1, -12, 0, 1),
-		Parent = holder,
-	})
+    local topClick = Create("TextButton", {
+        Name = "TopClick",
+        BackgroundTransparency = 1,
+        Text = "",
+        Size = UDim2.fromScale(1, 1),
+        ZIndex = 10,
+        Parent = topBar,
+    })
 
-	-- options container
-	local container = Create("Frame", {
-		Name = "DropdownContainer",
-		AnchorPoint = Vector2.new(0, 1),
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		Position = UDim2.new(0, 0, 1, 0),
-		Size = UDim2.new(1, 0, 1, searchable and -90 or -52),
-		Parent = holder,
-	})
-	local scroller = Create("ScrollingFrame", {
-		Name = "DropdownScroller",
-		Active = true,
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		Size = UDim2.fromScale(1, 1),
-		CanvasSize = UDim2.new(0, 0, 0, 0),
-		AutomaticCanvasSize = Enum.AutomaticSize.Y,
-		ScrollBarThickness = 0,
-		ScrollingDirection = Enum.ScrollingDirection.Y,
-		Parent = container,
-	})
-	local optList = Create("UIListLayout", {
-		Padding = UDim.new(0, 6),
-		SortOrder = Enum.SortOrder.LayoutOrder,
-		Parent = scroller,
-	})
-	Create("UIPadding", {
-		PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 6),
-		PaddingLeft = UDim.new(0, 6), PaddingRight = UDim.new(0, 6),
-		Parent = scroller,
-	})
+    -- search bar
+    local searchHolder, searchInput, clearBtn, searchStroke
+    if searchable then
+        searchHolder = Create("Frame", {
+            Name = "DropdownSearchHolder",
+            AnchorPoint = Vector2.new(0.5, 0),
+            BackgroundColor3 = theme.HolderColor,
+            BackgroundTransparency = 0.9,
+            BorderSizePixel = 0,
+            ClipsDescendants = true,
+            Position = UDim2.new(0.5, 0, 0, 53),
+            Size = UDim2.new(1, -10, 0, 25),
+            Parent = holder,
+        })
+        ApplyCorner(searchHolder, 3)
+        window:_track(searchHolder, "BackgroundColor3", "HolderColor")
+        Create("UIGradient", {
+            Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+                ColorSequenceKeypoint.new(0.5, Color3.fromRGB(80, 86, 89)),
+                ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255)),
+            }),
+            Parent = searchHolder,
+        })
+        searchStroke = Create("UIStroke", { Color = theme.Stroke, Transparency = 0.9, Parent = searchHolder })
+        window:_track(searchStroke, "Color", "Stroke")
+        Create("UIPadding", {
+            PaddingTop = UDim.new(0, 2), PaddingBottom = UDim.new(0, 2),
+            PaddingLeft = UDim.new(0, 5), PaddingRight = UDim.new(0, 22),
+            Parent = searchHolder,
+        })
+        Create("ImageLabel", {
+            Name = "DropdownSearchIcon",
+            AnchorPoint = Vector2.new(0, 0.5),
+            BackgroundTransparency = 1,
+            Position = UDim2.fromScale(0, 0.5),
+            Size = UDim2.fromOffset(20, 20),
+            Image = ResolveIcon(10734943674),
+            Parent = searchHolder,
+        })
+        searchInput = Create("TextBox", {
+            Name = "DropdownSearchInput",
+            BackgroundTransparency = 1,
+            Position = UDim2.fromOffset(23, 0),
+            Size = UDim2.new(1, -40, 1, 0),
+            FontFace = MakeFont("Arial"),
+            PlaceholderText = "Search...",
+            PlaceholderColor3 = theme.SecondaryText,
+            Text = "",
+            TextColor3 = theme.PrimaryText,
+            TextSize = 16,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Parent = searchHolder,
+        })
+        window:_track(searchInput, "TextColor3", "PrimaryText")
+        window:_track(searchInput, "PlaceholderColor3", "SecondaryText")
+        clearBtn = Create("ImageButton", {
+            Name = "ClearBtn",
+            AnchorPoint = Vector2.new(0, 0.5),
+            BackgroundTransparency = 1,
+            Position = UDim2.new(1, -5, 0.5, 0),
+            Size = UDim2.fromOffset(20, 20),
+            Image = ResolveIcon(10723346158),
+            Parent = searchHolder,
+        })
+    end
 
-	local expanded = false
-	local selected = {} -- set: value -> true
-	local optionButtons = {}
+    -- separator line under search / topbar
+    local sepLine = Create("Frame", {
+        Name = "DropdownSeperatorFrame",
+        AnchorPoint = Vector2.new(0.5, 0),
+        BackgroundColor3 = theme.Stroke,
+        BackgroundTransparency = 0.9,
+        BorderSizePixel = 0,
+        Position = UDim2.new(0.5, 0, 0, searchable and 85 or 47),
+        Size = UDim2.new(1, -12, 0, 1),
+        Parent = holder,
+    })
+    window:_track(sepLine, "BackgroundColor3", "Stroke")
 
-	local function isSelected(v: string): boolean
-		return selected[v] == true
-	end
+    -- options container
+    local container = Create("Frame", {
+        Name = "DropdownContainer",
+        AnchorPoint = Vector2.new(0, 1),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Position = UDim2.new(0, 0, 1, 0),
+        Size = UDim2.new(1, 0, 1, searchable and -90 or -52),
+        Parent = holder,
+    })
+    local scroller = Create("ScrollingFrame", {
+        Name = "DropdownScroller",
+        Active = true,
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Size = UDim2.fromScale(1, 1),
+        CanvasSize = UDim2.new(0, 0, 0, 0),
+        AutomaticCanvasSize = Enum.AutomaticSize.Y,
+        ScrollBarThickness = 0,
+        ScrollingDirection = Enum.ScrollingDirection.Y,
+        Parent = container,
+    })
+    local optList = Create("UIListLayout", {
+        Padding = UDim.new(0, 6),
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Parent = scroller,
+    })
+    Create("UIPadding", {
+        PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 6),
+        PaddingLeft = UDim.new(0, 6), PaddingRight = UDim.new(0, 6),
+        Parent = scroller,
+    })
 
-	local function collapsedHeight(): number
-		return 45
-	end
+    local expanded = false
+    local selected = {} -- set: value -> true
+    local optionButtons = {}
 
-	local function expandedHeight(): number
-		local visibleCount = 0
+    local function isSelected(v: string): boolean
+        return selected[v] == true
+    end
 
-		for _, option in ipairs(optionButtons) do
-			if option.holder.Visible then
-				visibleCount += 1
-			end
-		end
+    local function collapsedHeight(): number
+        return 45
+    end
 
-		local optionHeight = visibleCount * 45
-		local spacingHeight = math.max(0, visibleCount - 1) * 6
-		local paddingHeight = 12
-		local listHeight = optionHeight + spacingHeight + paddingHeight
+    local function expandedHeight(): number
+        local visibleCount = 0
 
-		local headerHeight = searchable and 90 or 52
-		return headerHeight + math.min(listHeight, 200)
-	end
+        for _, option in ipairs(optionButtons) do
+            if option.holder.Visible then
+                visibleCount += 1
+            end
+        end
 
-	local function refreshSize()
-		if searchHolder then searchHolder.Visible = expanded end
-		container.Visible = expanded
-		if expanded then
-			TweenService:Create(holder, MEDIUM, { Size = UDim2.new(1, 0, 0, expandedHeight()) }):Play()
-		else
-			TweenService:Create(holder, MEDIUM, { Size = UDim2.new(1, 0, 0, collapsedHeight()) }):Play()
-		end
-		self:_recalcHeight()
-	end
+        local optionHeight = visibleCount * 45
+        local spacingHeight = math.max(0, visibleCount - 1) * 6
+        local paddingHeight = 12
+        local listHeight = optionHeight + spacingHeight + paddingHeight
 
-	-- styles a single option button by its state
-	-- styles a single option button by its state, fully tweened
-	local function styleOption(opt, animate: boolean)
-		local info = animate and MEDIUM or TweenInfo.new(0)
-		local sel = isSelected(opt.value)
-		local grad = opt.gradient
+        local headerHeight = searchable and 90 or 52
+        return headerHeight + math.min(listHeight, 200)
+    end
 
-		-- gradient color swaps instantly (can't tween ColorSequence smoothly),
-		-- but transparency + stroke + bg all tween for a clean transition
-		if sel then
-			grad.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, theme.GradientTop),
-				ColorSequenceKeypoint.new(1, Color3.fromRGB(61, 107, 116)),
-			})
-		elseif opt.hovered then
-			grad.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, theme.GradientTop),
-				ColorSequenceKeypoint.new(1, Color3.fromRGB(42, 73, 79)),
-			})
-		else
-			grad.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, theme.GradientTop),
-				ColorSequenceKeypoint.new(1, theme.GradientBottom),
-			})
-		end
+    local function refreshSize()
+        if searchHolder then searchHolder.Visible = expanded end
+        container.Visible = expanded
+        if expanded then
+            TweenService:Create(holder, MEDIUM, { Size = UDim2.new(1, 0, 0, expandedHeight()) }):Play()
+        else
+            TweenService:Create(holder, MEDIUM, { Size = UDim2.new(1, 0, 0, collapsedHeight()) }):Play()
+        end
+        self:_recalcHeight()
+    end
 
-		local bgTransparency = sel and 0.6 or (opt.hovered and 0.7 or 0.8)
-		TweenService:Create(opt.holder, info, { BackgroundTransparency = bgTransparency }):Play()
+    -- styles a single option button by its state, fully theme-aware.
+    -- selected/hover colors are derived live from the current accent,
+    -- so every theme preset automatically looks right.
+    local function styleOption(opt, animate: boolean)
+        local t = window._theme
+        local info = animate and MEDIUM or TweenInfo.new(0)
+        local sel = isSelected(opt.value)
+        local grad = opt.gradient
 
-		opt.stroke.Color = sel and theme.Accent or theme.Stroke
-		TweenService:Create(opt.stroke, info, { Transparency = sel and 0.2 or 0.9 }):Play()
+        local selBottom = t.GradientBottom:Lerp(t.Accent, 0.45)
+        local hovBottom = t.GradientBottom:Lerp(t.Accent, 0.2)
 
-		TweenService:Create(opt.bg, info, {
-			ImageTransparency = (sel or opt.hovered) and 0.91 or 1,
-		}):Play()
-	end
+        if sel then
+            grad.Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0, t.GradientTop),
+                ColorSequenceKeypoint.new(1, selBottom),
+            })
+        elseif opt.hovered then
+            grad.Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0, t.GradientTop),
+                ColorSequenceKeypoint.new(1, hovBottom),
+            })
+        else
+            grad.Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0, t.GradientTop),
+                ColorSequenceKeypoint.new(1, t.GradientBottom),
+            })
+        end
 
-	local api = {}
+        local base = t.HolderTransparency
+        local bgTransparency
+        if sel then
+            bgTransparency = math.clamp(base - 0.2, 0, 1)
+        elseif opt.hovered then
+            bgTransparency = math.clamp(base - 0.1, 0, 1)
+        else
+            bgTransparency = base
+        end
+        TweenService:Create(opt.holder, info, { BackgroundTransparency = bgTransparency }):Play()
 
-	local function fireCallback()
-		if not config.Callback then return end
-		if multi then
-			local list = {}
-			for _, v in ipairs(values) do
-				if selected[v] then table.insert(list, v) end
-			end
-			task.spawn(config.Callback, list)
-		else
-			local one
-			for v in pairs(selected) do one = v end
-			task.spawn(config.Callback, one)
-		end
-	end
+        opt.stroke.Color = sel and t.Accent or t.Stroke
+        TweenService:Create(opt.stroke, info, { Transparency = sel and 0.2 or 0.9 }):Play()
 
-	local function selectValue(v: string, silent: boolean?)
-		if multi then
-			selected[v] = not selected[v] or nil
-		else
-			selected = { [v] = true }
-			if expanded then
-				expanded = false
-				refreshSize()
-			end
-		end
-		for _, opt in ipairs(optionButtons) do
-			styleOption(opt, true)
-		end
-		if not silent then fireCallback() end
-	end
+        opt.bg.ImageColor3 = t.HoverColor
+        TweenService:Create(opt.bg, info, {
+            ImageTransparency = (sel or opt.hovered) and t.HoverTransparency or 1,
+        }):Play()
+    end
 
-	-- build option buttons
-	for i, v in ipairs(values) do
-		local optHolder = Create("Frame", {
-			Name = "OptionHolder",
-			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-			BackgroundTransparency = 0.8,
-			BorderSizePixel = 0,
-			ClipsDescendants = true,
-			LayoutOrder = i,
-			Size = UDim2.new(1, 0, 0, 45),
-			Parent = scroller,
-		})
-		ApplyCorner(optHolder, 4)
-		local optStroke = Create("UIStroke", { Color = theme.Stroke, Transparency = 0.9, Parent = optHolder })
-		local optGradient = Create("UIGradient", {
-			Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, theme.GradientTop),
-				ColorSequenceKeypoint.new(1, theme.GradientBottom),
-			}),
-			Parent = optHolder,
-		})
-		local optBg = Create("ImageLabel", {
-			Name = "Background",
-			BackgroundTransparency = 1,
-			Size = UDim2.fromScale(1, 1),
-			ZIndex = -10,
-			Image = "rbxassetid://36169650",
-			ImageTransparency = 1,
-			ScaleType = Enum.ScaleType.Crop,
-			Parent = optHolder,
-		})
-		local optText = Create("TextLabel", {
-			Name = "OptionText",
-			AnchorPoint = Vector2.new(0, 0.5),
-			BackgroundTransparency = 1,
-			Position = UDim2.fromScale(0, 0.5),
-			Size = UDim2.new(1, -16, 0, 20),
-			FontFace = MakeFont("HighwayGothic"),
-			Text = v,
-			TextColor3 = theme.PrimaryText,
-			TextSize = 19,
-			TextXAlignment = Enum.TextXAlignment.Left,
-			Parent = optHolder,
-		})
-		Create("UIPadding", { PaddingLeft = UDim.new(0, 5), Parent = optText })
-		self._window:_track(optText, "TextColor3", "PrimaryText")
+    local api = {}
 
-		local optBtn = Create("TextButton", {
-			Name = "Button",
-			BackgroundTransparency = 1,
-			Text = "",
-			Size = UDim2.fromScale(1, 1),
-			ZIndex = 20,
-			Parent = optHolder,
-		})
+    local function fireCallback()
+        if not config.Callback then return end
+        if multi then
+            local list = {}
+            for _, v in ipairs(values) do
+                if selected[v] then table.insert(list, v) end
+            end
+            task.spawn(config.Callback, list)
+        else
+            local one
+            for v in pairs(selected) do one = v end
+            task.spawn(config.Callback, one)
+        end
+    end
 
-		local opt = {
-			value = v,
+    local function selectValue(v: string, silent: boolean?)
+        if multi then
+            selected[v] = not selected[v] or nil
+        else
+            selected = { [v] = true }
+            if expanded then
+                expanded = false
+                refreshSize()
+            end
+        end
+        for _, opt in ipairs(optionButtons) do
+            styleOption(opt, true)
+        end
+        if not silent then fireCallback() end
+    end
+
+    -- build option buttons
+    for i, v in ipairs(values) do
+        local optHolder = Create("Frame", {
+            Name = "OptionHolder",
+            BackgroundColor3 = theme.HolderColor,
+            BackgroundTransparency = theme.HolderTransparency,
+            BorderSizePixel = 0,
+            ClipsDescendants = true,
+            LayoutOrder = i,
+            Size = UDim2.new(1, 0, 0, 45),
+            Parent = scroller,
+        })
+        ApplyCorner(optHolder, 4)
+        window:_track(optHolder, "BackgroundColor3", "HolderColor")
+
+        local optStroke = Create("UIStroke", { Color = theme.Stroke, Transparency = 0.9, Parent = optHolder })
+        local optGradient = Create("UIGradient", {
+            Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0, theme.GradientTop),
+                ColorSequenceKeypoint.new(1, theme.GradientBottom),
+            }),
+            Parent = optHolder,
+        })
+        local optBg = Create("ImageLabel", {
+            Name = "Background",
+            BackgroundTransparency = 1,
+            Size = UDim2.fromScale(1, 1),
+            ZIndex = -10,
+            Image = "rbxassetid://36169650",
+            ImageColor3 = theme.HoverColor,
+            ImageTransparency = 1,
+            ScaleType = Enum.ScaleType.Crop,
+            Parent = optHolder,
+        })
+        local optText = Create("TextLabel", {
+            Name = "OptionText",
+            AnchorPoint = Vector2.new(0, 0.5),
+            BackgroundTransparency = 1,
+            Position = UDim2.fromScale(0, 0.5),
+            Size = UDim2.new(1, -16, 0, 20),
+            FontFace = MakeFont("HighwayGothic"),
+            Text = v,
+            TextColor3 = theme.PrimaryText,
+            TextSize = 19,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Parent = optHolder,
+        })
+        Create("UIPadding", { PaddingLeft = UDim.new(0, 5), Parent = optText })
+        window:_track(optText, "TextColor3", "PrimaryText")
+
+        local optBtn = Create("TextButton", {
+            Name = "Button",
+            BackgroundTransparency = 1,
+            Text = "",
+            Size = UDim2.fromScale(1, 1),
+            ZIndex = 20,
+            Parent = optHolder,
+        })
+
+        local opt = {
+            value = v,
             holder = optHolder,
             gradient = optGradient,
             bg = optBg,
             text = optText,
             stroke = optStroke,
             hovered = false,
-		}
-		table.insert(optionButtons, opt)
+        }
+        table.insert(optionButtons, opt)
 
-		optHolder.MouseEnter:Connect(function()
-			opt.hovered = true
-			styleOption(opt, true)
-		end)
-		optHolder.MouseLeave:Connect(function()
-			opt.hovered = false
-			styleOption(opt, true)
-		end)
-		optBtn.MouseButton1Click:Connect(function()
-			selectValue(v)
-		end)
-	end
+        window:_trackAccent(optHolder, function()
+            styleOption(opt, false)
+        end)
 
-	-- collapse arrow toggle
-	local function toggleExpanded()
-		expanded = not expanded
-		local rot = expanded and 180 or 0
-		TweenService:Create(collapseArrow, FAST, { Rotation = rot }):Play()
-		refreshSize()
-	end
+        optHolder.MouseEnter:Connect(function()
+            opt.hovered = true
+            styleOption(opt, true)
+        end)
+        optHolder.MouseLeave:Connect(function()
+            opt.hovered = false
+            styleOption(opt, true)
+        end)
+        optBtn.MouseButton1Click:Connect(function()
+            selectValue(v)
+        end)
+    end
 
-	topClick.MouseButton1Click:Connect(toggleExpanded)
-	collapseArrow.MouseButton1Click:Connect(toggleExpanded)
-	collapseArrow.MouseEnter:Connect(function()
-		TweenService:Create(collapseArrow, FAST, { ImageTransparency = 0.4 }):Play()
-	end)
-	collapseArrow.MouseLeave:Connect(function()
-		TweenService:Create(collapseArrow, FAST, { ImageTransparency = 0 }):Play()
-	end)
+    -- collapse arrow toggle
+    local function toggleExpanded()
+        expanded = not expanded
+        local rot = expanded and 180 or 0
+        TweenService:Create(collapseArrow, FAST, { Rotation = rot }):Play()
+        refreshSize()
+    end
 
-	-- search filtering
-	if searchable then
-		searchInput.Focused:Connect(function()
-			TweenService:Create(searchStroke, FAST, { Transparency = 0.65 }):Play()
-		end)
-		searchInput.FocusLost:Connect(function()
-			TweenService:Create(searchStroke, FAST, { Transparency = 0.9 }):Play()
-		end)
-		searchInput:GetPropertyChangedSignal("Text"):Connect(function()
-			local query = string.lower(searchInput.Text)
-			for _, opt in ipairs(optionButtons) do
-				opt.holder.Visible = (query == "" or string.find(string.lower(opt.value), query, 1, true) ~= nil)
-			end
-			if expanded then refreshSize() end
-		end)
-		clearBtn.MouseButton1Click:Connect(function()
-			searchInput.Text = ""
-		end)
-	end
+    topClick.MouseButton1Click:Connect(toggleExpanded)
+    collapseArrow.MouseButton1Click:Connect(toggleExpanded)
+    collapseArrow.MouseEnter:Connect(function()
+        TweenService:Create(collapseArrow, FAST, { ImageTransparency = 0.4 }):Play()
+    end)
+    collapseArrow.MouseLeave:Connect(function()
+        TweenService:Create(collapseArrow, FAST, { ImageTransparency = 0 }):Play()
+    end)
 
-	function api:Set(value: (string | {string}), silent: boolean?)
-		selected = {}
-		if type(value) == "table" then
-			for _, v in ipairs(value) do selected[v] = true end
-		elseif value ~= nil then
-			selected[value] = true
-		end
-		for _, opt in ipairs(optionButtons) do styleOption(opt, false) end
-		if not silent then fireCallback() end
-	end
+    -- search filtering
+    if searchable then
+        searchInput.Focused:Connect(function()
+            TweenService:Create(searchStroke, FAST, { Transparency = 0.65 }):Play()
+        end)
+        searchInput.FocusLost:Connect(function()
+            TweenService:Create(searchStroke, FAST, { Transparency = 0.9 }):Play()
+        end)
+        searchInput:GetPropertyChangedSignal("Text"):Connect(function()
+            local query = string.lower(searchInput.Text)
+            for _, opt in ipairs(optionButtons) do
+                opt.holder.Visible = (query == "" or string.find(string.lower(opt.value), query, 1, true) ~= nil)
+            end
+            if expanded then refreshSize() end
+        end)
+        clearBtn.MouseButton1Click:Connect(function()
+            searchInput.Text = ""
+        end)
+    end
 
-	function api:Get()
-		if multi then
-			local list = {}
-			for _, v in ipairs(values) do
-				if selected[v] then table.insert(list, v) end
-			end
-			return list
-		else
-			for v in pairs(selected) do return v end
-			return nil
-		end
-	end
+    function api:Set(value: (string | {string}), silent: boolean?)
+        selected = {}
+        if type(value) == "table" then
+            for _, v in ipairs(value) do selected[v] = true end
+        elseif value ~= nil then
+            selected[value] = true
+        end
+        for _, opt in ipairs(optionButtons) do styleOption(opt, false) end
+        if not silent then fireCallback() end
+    end
 
-	function api:SetTitle(t: string) titleLabel.Text = t end
-	function api:SetDescription(d: string) descLabel.Text = d end
-	function api:SetVisible(v: boolean) holder.Visible = v end
-	function api:Destroy() holder:Destroy() end
-	api._holder = holder
-	api._searchTitle = config.Title or "Dropdown"
+    function api:Get()
+        if multi then
+            local list = {}
+            for _, v in ipairs(values) do
+                if selected[v] then table.insert(list, v) end
+            end
+            return list
+        else
+            for v in pairs(selected) do return v end
+            return nil
+        end
+    end
 
-	if config.Tooltip then
-		self._window:AttachTooltip(topBar, config.Tooltip)
-	end
+    function api:SetTitle(t: string) titleLabel.Text = t end
+    function api:SetDescription(d: string) descLabel.Text = d end
+    function api:SetVisible(v: boolean) holder.Visible = v end
+    function api:Destroy() holder:Destroy() end
+    api._holder = holder
+    api._searchTitle = config.Title or "Dropdown"
 
-	-- apply default
-	if config.Default then
-		api:Set(config.Default, true)
-	end
+    if config.Tooltip then
+        window:AttachTooltip(topBar, config.Tooltip)
+    end
 
-	if searchHolder then searchHolder.Visible = false end
-	container.Visible = false
-	holder.Size = UDim2.new(1, 0, 0, collapsedHeight())
-	return self:_register(api)
+    -- apply default
+    if config.Default then
+        api:Set(config.Default, true)
+    end
+
+    if searchHolder then searchHolder.Visible = false end
+    container.Visible = false
+    holder.Size = UDim2.new(1, 0, 0, collapsedHeight())
+    return self:_register(api)
 end
 
 -- ========================================================================
 -- color picker component
--- ========================================================================
-
--- ========================================================================
--- color picker component (full: palette, hue, darkness, presets, hex)
 -- ========================================================================
 
 local PRESET_COLORS = {
@@ -3371,6 +3527,12 @@ function Category:AddColorPicker(config: {
 	api._holder = holder
 	api._searchTitle = config.Title or "Color Picker"
 
+	self._window:_track(pickerWindow, "BackgroundColor3", "PickerBackground")
+    self._window:_track(titleLabel, "TextColor3", "PrimaryText")
+    self._window:_track(descLabel, "TextColor3", "SecondaryText")
+    self._window:_track(customText, "TextColor3", "SecondaryText")
+    self._window:_track(hexBox, "TextColor3", "PrimaryText")
+	
 	if config.Tooltip then
 		self._window:AttachTooltip(topBar, config.Tooltip)
 	end
@@ -3401,7 +3563,7 @@ function Window:Notify(config: {
     local TextService = game:GetService("TextService")
     local contentStr = config.Content or ""
     local measured = TextService:GetTextSize(
-        contentStr, 15, Enum.Font.Ubuntu, Vector2.new(width - 24, math.huge)
+        contentStr, 15, Enum.Font.Ubuntu, Vector2.new(width - 28, math.huge)
     )
     local height = math.clamp(34 + measured.Y + 14, 62, 220)
 
@@ -3417,19 +3579,18 @@ function Window:Notify(config: {
 
     local card = Create("Frame", {
         Name = "Card",
-        BackgroundColor3 = theme.CategoryTopBar,
-        BackgroundTransparency = 0.05,
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BackgroundTransparency = 0.02,
         BorderSizePixel = 0,
         ClipsDescendants = true,
-        Position = UDim2.new(-1, -12, 0, 0),
-        Size = UDim2.new(1, 0, 1, 0),
+        Position = UDim2.new(-1, -12, 0, 2),
+        Size = UDim2.new(1, -4, 1, -4),
         Parent = slot,
     })
     ApplyCorner(card, 4)
-    self:_track(card, "BackgroundColor3", "CategoryTopBar")
 
     local grad = Create("UIGradient", {
-        Rotation = 90,
+        Rotation = 45,
         Color = ColorSequence.new({
             ColorSequenceKeypoint.new(0, theme.GradientTop),
             ColorSequenceKeypoint.new(1, theme.GradientBottom),
@@ -3438,7 +3599,12 @@ function Window:Notify(config: {
     })
     self:_trackGradient(grad, "GradientTop", "GradientBottom")
 
-    local stroke = Create("UIStroke", { Color = theme.Accent, Transparency = 0.55, Parent = card })
+    local stroke = Create("UIStroke", {
+        Color = theme.Accent,
+        Transparency = 0.45,
+        Thickness = 1,
+        Parent = card,
+    })
     self:_trackAccent(stroke, function(accent) stroke.Color = accent end)
 
     local accentBar = Create("Frame", {
@@ -3526,7 +3692,7 @@ function Window:Notify(config: {
     }):Play()
     TweenService:Create(card,
         TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-        { Position = UDim2.new(0, 0, 0, 0) }
+        { Position = UDim2.new(0, 2, 0, 2) }
     ):Play()
 
     local function dismiss()
@@ -3536,7 +3702,7 @@ function Window:Notify(config: {
 
         local slideOut = TweenService:Create(card,
             TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-            { Position = UDim2.new(-1, -12, 0, 0) }
+            { Position = UDim2.new(-1, -12, 0, 2) }
         )
         slideOut:Play()
         slideOut.Completed:Once(function()
@@ -3611,12 +3777,12 @@ function Nexo.CreateWindow(config: {
 	})
 
 	local notifyHolder = Create("Frame", {
-		Name = "NotificationsHolder",
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		Size = UDim2.new(0, 200, 1, 0),
-		Parent = notifyGui,
-	})
+        Name = "NotificationsHolder",
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Size = UDim2.new(0, 260, 1, 0),
+        Parent = notifyGui,
+    })
 	Create("UIListLayout", {
 		VerticalAlignment = Enum.VerticalAlignment.Bottom,
 		SortOrder = Enum.SortOrder.LayoutOrder,
@@ -3849,63 +4015,68 @@ function Nexo.CreateWindow(config: {
 		Parent = tabContainer,
 	})
 
-	local searchHolder = Create("Frame", {
-		Name = "SearchHolder",
-		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-		BackgroundTransparency = 0.85,
-		BorderSizePixel = 0,
-		ClipsDescendants = true,
-		Size = UDim2.new(1, 0, 0, 35),
-		Parent = tabContainer,
-	})
-	ApplyCorner(searchHolder, 3)
-	Create("UIGradient", {
-		Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-			ColorSequenceKeypoint.new(0.5, Color3.fromRGB(80, 86, 89)),
-			ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255)),
-		}),
-		Parent = searchHolder,
-	})
-	local searchStroke = Create("UIStroke", { Color = Color3.fromRGB(230, 230, 230), Transparency = 0.9, Parent = searchHolder })
-	Create("UIPadding", {
-		PaddingTop = UDim.new(0, 2),
-		PaddingBottom = UDim.new(0, 2),
-		PaddingLeft = UDim.new(0, 5),
-		PaddingRight = UDim.new(0, 22),
-		Parent = searchHolder,
-	})
-	Create("ImageLabel", {
-		Name = "SearchIcon",
-		AnchorPoint = Vector2.new(0, 0.5),
-		BackgroundTransparency = 1,
-		Position = UDim2.fromScale(0, 0.5),
-		Size = UDim2.fromOffset(20, 20),
-		Image = ResolveIcon(10734943674),
-		Parent = searchHolder,
-	})
-	local searchInput = Create("TextBox", {
-		Name = "SearchInput",
-		BackgroundTransparency = 1,
-		Position = UDim2.fromOffset(23, 0),
-		Size = UDim2.new(1, -40, 1, 0),
-		FontFace = MakeFont("Arial"),
-		PlaceholderText = "Search...",
-		Text = "",
-		TextColor3 = Color3.fromRGB(230, 230, 230),
-		TextSize = 16,
-		TextXAlignment = Enum.TextXAlignment.Left,
-		Parent = searchHolder,
-	})
-	Create("ImageButton", {
-		Name = "ClearBtn",
-		AnchorPoint = Vector2.new(0, 0.5),
-		BackgroundTransparency = 1,
-		Position = UDim2.new(1, -5, 0.5, 0),
-		Size = UDim2.fromOffset(20, 20),
-		Image = ResolveIcon(10723346158),
-		Parent = searchHolder,
-	})
+	    local searchHolder = Create("Frame", {
+        Name = "SearchHolder",
+        BackgroundColor3 = theme.HolderColor,
+        BackgroundTransparency = 0.85,
+        BorderSizePixel = 0,
+        ClipsDescendants = true,
+        Size = UDim2.new(1, 0, 0, 35),
+        Parent = tabContainer,
+    })
+    ApplyCorner(searchHolder, 3)
+    self_win:_track(searchHolder, "BackgroundColor3", "HolderColor")
+    Create("UIGradient", {
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(80, 86, 89)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255)),
+        }),
+        Parent = searchHolder,
+    })
+    local searchStroke = Create("UIStroke", { Color = theme.Stroke, Transparency = 0.9, Parent = searchHolder })
+    self_win:_track(searchStroke, "Color", "Stroke")
+    Create("UIPadding", {
+        PaddingTop = UDim.new(0, 2),
+        PaddingBottom = UDim.new(0, 2),
+        PaddingLeft = UDim.new(0, 5),
+        PaddingRight = UDim.new(0, 22),
+        Parent = searchHolder,
+    })
+    Create("ImageLabel", {
+        Name = "SearchIcon",
+        AnchorPoint = Vector2.new(0, 0.5),
+        BackgroundTransparency = 1,
+        Position = UDim2.fromScale(0, 0.5),
+        Size = UDim2.fromOffset(20, 20),
+        Image = ResolveIcon(10734943674),
+        Parent = searchHolder,
+    })
+    local searchInput = Create("TextBox", {
+        Name = "SearchInput",
+        BackgroundTransparency = 1,
+        Position = UDim2.fromOffset(23, 0),
+        Size = UDim2.new(1, -40, 1, 0),
+        FontFace = MakeFont("Arial"),
+        PlaceholderText = "Search...",
+        PlaceholderColor3 = theme.SecondaryText,
+        Text = "",
+        TextColor3 = theme.PrimaryText,
+        TextSize = 16,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = searchHolder,
+    })
+    self_win:_track(searchInput, "TextColor3", "PrimaryText")
+    self_win:_track(searchInput, "PlaceholderColor3", "SecondaryText")
+    Create("ImageButton", {
+        Name = "ClearBtn",
+        AnchorPoint = Vector2.new(0, 0.5),
+        BackgroundTransparency = 1,
+        Position = UDim2.new(1, -5, 0.5, 0),
+        Size = UDim2.fromOffset(20, 20),
+        Image = ResolveIcon(10723346158),
+        Parent = searchHolder,
+    })
 
 	local tabHolder = Create("Frame", {
 		Name = "TabHolder",
@@ -4166,15 +4337,15 @@ function Nexo.CreateWindow(config: {
 		end,
 	})
 	themeCat:AddDropdown({
-		Title = "Theme Preset",
-		Description = "Switch base theme",
-		Values = { "Dark", "Light" },
-		Default = "Dark",
-		Searchable = false,
-		Callback = function(preset)
-			self_win:SetThemePreset(preset)
-		end,
-	})
+        Title = "Theme Preset",
+        Description = "Switch base theme",
+        Values = { "Default", "Dark", "Light", "Midnight", "Amoled" },
+        Default = "Default",
+        Searchable = false,
+        Callback = function(preset)
+            self_win:SetThemePreset(preset)
+        end,
+    })
 	themeCat:AddSlider({
     Title = "Window Opacity",
     Description = "Background transparency",
