@@ -34,6 +34,7 @@ local DefaultTheme = {
     HoverColor = Color3.fromRGB(255, 255, 255),
     HoverTransparency = 0.91,
     PickerBackground = Color3.fromRGB(32, 55, 61),
+	IconColor = Color3.fromRGB(255, 255, 255),
 }
 
 -- tweens
@@ -194,80 +195,87 @@ local Category = {}
 Category.__index = Category
 
 function Category:_register(api: any)
-	self._components = self._components or {}
+    self._components = self._components or {}
 
-	api._category = self
-	api._window = self._window
-	api._userVisible = api._holder == nil or api._holder.Visible
+    api._category = self
+    api._window = self._window
+    api._userVisible = api._holder == nil or api._holder.Visible
 
-	-- SetVisible durumunu search temizlenince kaybetme.
-	local originalSetVisible = api.SetVisible
-	if originalSetVisible then
-		api.SetVisible = function(object: any, visible: boolean)
-			api._userVisible = visible
-			originalSetVisible(object, visible)
+    if api._flag then
+        self._window._flags = self._window._flags or {}
+        self._window._flags[api._flag] = api
+    end
 
-			if self._window._runSearch then
-				self._window:_runSearch()
-			end
-		end
-	end
+    local originalSetVisible = api.SetVisible
+    if originalSetVisible then
+        api.SetVisible = function(object: any, visible: boolean)
+            api._userVisible = visible
+            originalSetVisible(object, visible)
 
-	-- Runtime'da başlık değişirse search metadata da değişsin.
-	local originalSetTitle = api.SetTitle
-	if originalSetTitle then
-		api.SetTitle = function(object: any, text: string)
-			api._searchTitle = text
-			originalSetTitle(object, text)
+            if self._window._runSearch then
+                self._window:_runSearch()
+            end
+        end
+    end
 
-			if self._window._runSearch then
-				self._window:_runSearch()
-			end
-		end
-	end
+    local originalSetTitle = api.SetTitle
+    if originalSetTitle then
+        api.SetTitle = function(object: any, text: string)
+            api._searchTitle = text
+            originalSetTitle(object, text)
 
-	local originalSetDescription = api.SetDescription
-	if originalSetDescription then
-		api.SetDescription = function(object: any, text: string)
-			api._searchDescription = text
-			originalSetDescription(object, text)
+            if self._window._runSearch then
+                self._window:_runSearch()
+            end
+        end
+    end
 
-			if self._window._runSearch then
-				self._window:_runSearch()
-			end
-		end
-	end
+    local originalSetDescription = api.SetDescription
+    if originalSetDescription then
+        api.SetDescription = function(object: any, text: string)
+            api._searchDescription = text
+            originalSetDescription(object, text)
 
-	local originalDestroy = api.Destroy
-	if originalDestroy then
-		api.Destroy = function(object: any)
-			for index, component in ipairs(self._components) do
-				if component == api then
-					table.remove(self._components, index)
-					break
-				end
-			end
+            if self._window._runSearch then
+                self._window:_runSearch()
+            end
+        end
+    end
 
-			originalDestroy(object)
+    local originalDestroy = api.Destroy
+    if originalDestroy then
+        api.Destroy = function(object: any)
+            for index, component in ipairs(self._components) do
+                if component == api then
+                    table.remove(self._components, index)
+                    break
+                end
+            end
 
-			if self._window._runSearch then
-				self._window:_runSearch()
-			end
-		end
-	end
+            if api._flag and self._window._flags then
+                self._window._flags[api._flag] = nil
+            end
 
-	table.insert(self._components, api)
+            originalDestroy(object)
 
-	task.defer(function()
-		if self._window and self._window._runSearch then
-			if self._window._searchInput
-				and self._window._searchInput.Text ~= "" then
-				self._window:_runSearch()
-			end
-		end
-	end)
+            if self._window._runSearch then
+                self._window:_runSearch()
+            end
+        end
+    end
 
-	return api
+    table.insert(self._components, api)
+
+    task.defer(function()
+        if self._window and self._window._runSearch then
+            if self._window._searchInput
+                and self._window._searchInput.Text ~= "" then
+                self._window:_runSearch()
+            end
+        end
+    end)
+
+    return api
 end
 
 function Category:_recalcHeight()
@@ -441,6 +449,7 @@ function Tab:AddCategory(config: {
 		Image = ResolveIcon(config.Icon or 10747373176),
 		Parent = topBar,
 	})
+	self._window:_track(icon, "ImageColor3", "IconColor")
 
 	local title = Create("TextLabel", {
 		Name = "CategoryTitle",
@@ -525,6 +534,7 @@ function Tab:AddCategory(config: {
 		Image = ResolveIcon(10734896206),
 		Parent = topBar,
 	})
+	self._window:_track(collapseBtn, "ImageColor3", "IconColor")
 
 	-- container holder + lock overlay
 	local containerHolder = Create("Frame", {
@@ -782,47 +792,63 @@ end
 
 -- re-applies every tracked theme color across the ui
 function Window:ApplyTheme()
-	if not self._themed then
-		return
-	end
+    if not self._themed then
+        return
+    end
 
-	local validEntries = {}
+    local validEntries = {}
 
-	for _, entry in ipairs(self._themed) do
-		local instance = entry.inst
+    for _, entry in ipairs(self._themed) do
+        local instance = entry.inst
 
-		if instance and instance.Parent then
-			local success, err = pcall(function()
-				if entry.gradientKeys then
-					local first = self._theme[entry.gradientKeys[1]]
-					local second = self._theme[entry.gradientKeys[2]]
+        if instance and instance.Parent then
+            local success, err = pcall(function()
+                if entry.gradientKeys then
+                    local first = self._theme[entry.gradientKeys[1]]
+                    local second = self._theme[entry.gradientKeys[2]]
 
-					if typeof(first) == "Color3"
-						and typeof(second) == "Color3" then
-						(instance :: UIGradient).Color = ColorSequence.new({
-							ColorSequenceKeypoint.new(0, first),
-							ColorSequenceKeypoint.new(1, second),
-						})
-					end
-				else
-					local value = self._theme[entry.key]
+                    if typeof(first) == "Color3"
+                        and typeof(second) == "Color3" then
+                        (instance :: UIGradient).Color = ColorSequence.new({
+                            ColorSequenceKeypoint.new(0, first),
+                            ColorSequenceKeypoint.new(1, second),
+                        })
+                    end
+                else
+                    local value = self._theme[entry.key]
 
-					if value ~= nil then
-						(instance :: any)[entry.prop] = value
-					end
-				end
-			end)
+                    if value ~= nil then
+                        (instance :: any)[entry.prop] = value
+                    end
+                end
+            end)
 
-			if not success then
-				warn("[Nexo] Theme apply error:", err)
-			end
+            if not success then
+                warn("[Nexo] Theme apply error:", err)
+            end
 
-			table.insert(validEntries, entry)
-		end
-	end
+            table.insert(validEntries, entry)
+        end
+    end
 
-	-- Destroy edilmiş instance kayıtlarını temizle.
-	self._themed = validEntries
+    self._themed = validEntries
+
+    if self._themeRefreshers then
+        local alive = {}
+        for _, r in ipairs(self._themeRefreshers) do
+            if r.inst and r.inst.Parent then
+                pcall(r.fn)
+                table.insert(alive, r)
+            end
+        end
+        self._themeRefreshers = alive
+    end
+end
+
+function Window:_onThemeChanged(inst: Instance, fn: () -> ())
+    self._themeRefreshers = self._themeRefreshers or {}
+    table.insert(self._themeRefreshers, { inst = inst, fn = fn })
+    return inst
 end
 
 function Window:SetAccent(color: Color3)
@@ -890,6 +916,7 @@ local ThemePresets = {
         HoverColor = Color3.fromRGB(255, 255, 255),
         HoverTransparency = 0.91,
         PickerBackground = Color3.fromRGB(32, 55, 61),
+		IconColor = Color3.fromRGB(255, 255, 255),
     },
 
     Dark = {
@@ -918,6 +945,7 @@ local ThemePresets = {
         HoverColor = Color3.fromRGB(255, 255, 255),
         HoverTransparency = 0.91,
         PickerBackground = Color3.fromRGB(32, 32, 38),
+		IconColor = Color3.fromRGB(255, 255, 255),
     },
 
     Light = {
@@ -946,6 +974,7 @@ local ThemePresets = {
         HoverColor = Color3.fromRGB(25, 25, 35), 
         HoverTransparency = 0.92,
         PickerBackground = Color3.fromRGB(215, 220, 228),
+		IconColor = Color3.fromRGB(40, 40, 55),
     },
 
     Midnight = {
@@ -974,6 +1003,7 @@ local ThemePresets = {
         HoverColor = Color3.fromRGB(255, 255, 255),
         HoverTransparency = 0.91,
         PickerBackground = Color3.fromRGB(24, 26, 44),
+		IconColor = Color3.fromRGB(255, 255, 255),
     },
 
     Amoled = {
@@ -1002,6 +1032,7 @@ local ThemePresets = {
         HoverColor = Color3.fromRGB(255, 255, 255),
         HoverTransparency = 0.9,
         PickerBackground = Color3.fromRGB(16, 16, 16),
+		IconColor = Color3.fromRGB(255, 255, 255),
     },
 }
 
@@ -1041,59 +1072,40 @@ function Window:SetThemeColor(key: string, color: Color3)
 end
 
 function Window:_updateNav()
-	local accent = self._theme.Accent
-    local h, s, v = accent:ToHSV()
-	local inactiveColor = ColorSequence.new(
-        Color3.fromHSV(h, s * 0.5, math.clamp(v * 0.75, 0, 1)),
-        Color3.new(1, 1, 1)
-    )
-    local hoverColor = ColorSequence.new(
-        Color3.fromHSV(h, s * 0.7, math.clamp(v * 1.15, 0, 1)),
-        Color3.new(1, 1, 1)
-    )
-    local activeColor = ColorSequence.new(
-        Color3.fromHSV(h, math.clamp(s * 0.85, 0, 1), 1),
-        Color3.new(1, 1, 1)
-    )
-	local gradientTransparency = NumberSequence.new({
-		NumberSequenceKeypoint.new(0, 0),
-		NumberSequenceKeypoint.new(1, 0),
-	})
+    local accent = self._theme.Accent
 
-	for _, tab in ipairs(self._tabs) do
-		-- while settings is open, no tab counts as active
-		local active = (not self._settingsOpen) and (tab == self._activeTab)
-		local hovered = tab._hovered
-		local btn = tab._navContainer
-		local gradient = tab._navGradient
-		local corner = tab._navCorner
+    local navColor = ColorSequence.new(accent, Color3.new(1, 1, 1))
 
-		gradient.Transparency = gradientTransparency
+    for _, tab in ipairs(self._tabs) do
+        local active = (not self._settingsOpen) and (tab == self._activeTab)
+        local hovered = tab._hovered
+        local btn = tab._navContainer
+        local gradient = tab._navGradient
+        local corner = tab._navCorner
 
-		if active then
-			gradient.Color = activeColor
-			TweenService:Create(btn, FAST, {
-				BackgroundTransparency = 0.02,
-				Size = UDim2.new(0, 100, 1, 0),
-			}):Play()
-			pcall(function()
-				local c = corner :: any
-				c.BottomLeftRadius = UDim.new(0, 0)
-				c.BottomRightRadius = UDim.new(0, 0)
-			end)
-		else
-			gradient.Color = hovered and hoverColor or inactiveColor
-			TweenService:Create(btn, FAST, {
-				BackgroundTransparency = hovered and 0.25 or 0.5,
-				Size = UDim2.new(0, 100, 1, -3),
-			}):Play()
-			pcall(function()
-				local c = corner :: any
-				c.BottomLeftRadius = UDim.new(0, 2)
-				c.BottomRightRadius = UDim.new(0, 2)
-			end)
-		end
-	end
+        gradient.Color = navColor
+
+        local targetTransparency
+        if active then
+            targetTransparency = 0.02
+        elseif hovered then
+            targetTransparency = 0.25
+        else
+            targetTransparency = 0.5
+        end
+
+        TweenService:Create(btn, FAST, {
+            BackgroundTransparency = targetTransparency,
+            Size = active and UDim2.new(0, 100, 1, 0) or UDim2.new(0, 100, 1, -3),
+        }):Play()
+
+        pcall(function()
+            local c = corner :: any
+            local r = active and UDim.new(0, 0) or UDim.new(0, 2)
+            c.BottomLeftRadius = r
+            c.BottomRightRadius = r
+        end)
+    end
 end
 
 function Window:SelectTab(tab)
@@ -1268,6 +1280,7 @@ function Window:AddTab(config: { Title: string?, Icon: (string | number)? })
         Image = ResolveIcon(config.Icon or 10747373176),
         Parent = navButton,
     })
+	self:_track(navIcon, "ImageColor3", "IconColor")
 
     self_tab.Root = page
     self_tab.Section1 = section1
@@ -1332,6 +1345,307 @@ end
 
 function Window:SetTitle(text: string)
 	self.TitleLabel.Text = text
+end
+
+-- config system
+
+local CONFIG_FOLDER = "NexoUI"
+
+local function canUseFiles(): boolean
+    return typeof(writefile) == "function"
+        and typeof(readfile) == "function"
+        and typeof(isfile) == "function"
+        and typeof(isfolder) == "function"
+        and typeof(makefolder) == "function"
+        and typeof(listfiles) == "function"
+end
+
+local function ensureFolder()
+    if canUseFiles() and not isfolder(CONFIG_FOLDER) then
+        makefolder(CONFIG_FOLDER)
+    end
+end
+
+local function colorToHex(c: Color3): string
+    return string.format("#%02x%02x%02x",
+        math.floor(c.R * 255 + 0.5),
+        math.floor(c.G * 255 + 0.5),
+        math.floor(c.B * 255 + 0.5))
+end
+
+local function hexToColor(hex: string): Color3?
+    hex = string.gsub(hex, "#", "")
+    if #hex ~= 6 then return nil end
+    local r = tonumber(hex:sub(1, 2), 16)
+    local g = tonumber(hex:sub(3, 4), 16)
+    local b = tonumber(hex:sub(5, 6), 16)
+    if r and g and b then
+        return Color3.fromRGB(r, g, b)
+    end
+    return nil
+end
+
+function Window:_serializeFlags()
+    local data = {}
+    for flag, api in pairs(self._flags or {}) do
+        local ok, value = pcall(function() return api:Get() end)
+        if ok and value ~= nil then
+            local kind = api._configKind
+            if kind == "keybind" and typeof(value) == "EnumItem" then
+                value = value.Name
+            elseif kind == "colorpicker" and typeof(value) == "Color3" then
+                value = colorToHex(value)
+            end
+            data[flag] = { kind = kind, value = value }
+        end
+    end
+    return data
+end
+
+function Window:ExportConfig(): string
+    return HttpService:JSONEncode(self:_serializeFlags())
+end
+
+function Window:_applyConfigData(data)
+    for flag, entry in pairs(data) do
+        local api = self._flags and self._flags[flag]
+        if api and type(entry) == "table" then
+            local value = entry.value
+            if entry.kind == "keybind" and type(value) == "string" then
+                local ok, key = pcall(function() return (Enum.KeyCode :: any)[value] end)
+                value = ok and key or nil
+            elseif entry.kind == "colorpicker" and type(value) == "string" then
+                value = hexToColor(value)
+            end
+            if value ~= nil then
+                pcall(function() api:Set(value) end)
+            end
+        end
+    end
+end
+
+function Window:ImportConfig(json: string): boolean
+    local ok, data = pcall(function()
+        return HttpService:JSONDecode(json)
+    end)
+    if not ok or type(data) ~= "table" then
+        self:Notify({ Title = "Config", Content = "Invalid JSON!", Duration = 4 })
+        return false
+    end
+    self:_applyConfigData(data)
+    self:Notify({ Title = "Config", Content = "Config imported.", Duration = 3 })
+    return true
+end
+
+function Window:SaveConfig(name: string): boolean
+    if not name or name == "" then
+        self:Notify({ Title = "Config", Content = "Enter a config name first.", Duration = 4 })
+        return false
+    end
+
+    local json = self:ExportConfig()
+
+    if canUseFiles() then
+        ensureFolder()
+        local ok = pcall(writefile, CONFIG_FOLDER .. "/" .. name .. ".json", json)
+        if not ok then
+            self:Notify({ Title = "Config", Content = "Failed to write file.", Duration = 4 })
+            return false
+        end
+    else
+        self._memoryConfigs = self._memoryConfigs or {}
+        self._memoryConfigs[name] = json
+    end
+
+    self:Notify({ Title = "Config", Content = 'Saved "' .. name .. '".', Duration = 3 })
+    return true
+end
+
+function Window:LoadConfig(name: string): boolean
+    if not name or name == "" then
+        self:Notify({ Title = "Config", Content = "Enter a config name first.", Duration = 4 })
+        return false
+    end
+
+    local json
+    if canUseFiles() then
+        local path = CONFIG_FOLDER .. "/" .. name .. ".json"
+        if isfile(path) then
+            local ok, result = pcall(readfile, path)
+            if ok then json = result end
+        end
+    elseif self._memoryConfigs then
+        json = self._memoryConfigs[name]
+    end
+
+    if not json then
+        self:Notify({ Title = "Config", Content = 'Config "' .. name .. '" not found.', Duration = 4 })
+        return false
+    end
+
+    return self:ImportConfig(json)
+end
+
+function Window:GetConfigs(): {string}
+    local names = {}
+    if canUseFiles() then
+        ensureFolder()
+        for _, path in ipairs(listfiles(CONFIG_FOLDER)) do
+            local n = string.match(path, "([^/\\]+)%.json$")
+            if n then table.insert(names, n) end
+        end
+    elseif self._memoryConfigs then
+        for n in pairs(self._memoryConfigs) do
+            table.insert(names, n)
+        end
+    end
+    table.sort(names)
+    return names
+end
+
+function Window:ExportTheme(): string
+    local out = {}
+    for k, v in pairs(self._theme) do
+        if typeof(v) == "Color3" then
+            out[k] = colorToHex(v)
+        else
+            out[k] = v
+        end
+    end
+    return HttpService:JSONEncode(out)
+end
+
+function Window:ImportTheme(json: string): boolean
+    local ok, data = pcall(function()
+        return HttpService:JSONDecode(json)
+    end)
+    if not ok or type(data) ~= "table" then
+        self:Notify({ Title = "Theme", Content = "Invalid theme JSON!", Duration = 4 })
+        return false
+    end
+
+    for k, v in pairs(data) do
+        if type(v) == "string" and string.sub(v, 1, 1) == "#" then
+            local col = hexToColor(v)
+            if col then self._theme[k] = col end
+        elseif type(v) == "number" then
+            self._theme[k] = v
+        end
+    end
+
+    for k, v in pairs(DefaultTheme) do
+        if self._theme[k] == nil then
+            self._theme[k] = v
+        end
+    end
+
+    self:SetAccent(self._theme.Accent)
+    self:Notify({ Title = "Theme", Content = "Theme imported.", Duration = 3 })
+    return true
+end
+
+-- keybind list
+
+function Window:_ensureKeybindList()
+    if self._keybindFrame then
+        return self._keybindFrame
+    end
+
+    local theme = self._theme
+
+    local frame = Create("Frame", {
+        Name = "KeybindList",
+        AnchorPoint = Vector2.new(1, 0.5),
+        AutomaticSize = Enum.AutomaticSize.Y,
+        BackgroundColor3 = theme.WindowBackground,
+        BackgroundTransparency = 0.1,
+        BorderSizePixel = 0,
+        Position = UDim2.new(1, -10, 0.5, 0),
+        Size = UDim2.fromOffset(180, 0),
+        Visible = false,
+        ZIndex = 100,
+        Parent = self.ScreenGui,
+    })
+    ApplyCorner(frame, 4)
+    self:_track(frame, "BackgroundColor3", "WindowBackground")
+
+    local kbStroke = Create("UIStroke", { Color = theme.Accent, Transparency = 0.5, Parent = frame })
+    self:_trackAccent(kbStroke, function(accent) kbStroke.Color = accent end)
+
+    Create("UIListLayout", {
+        Padding = UDim.new(0, 2),
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Parent = frame,
+    })
+    Create("UIPadding", {
+        PaddingTop = UDim.new(0, 6),
+        PaddingBottom = UDim.new(0, 6),
+        PaddingLeft = UDim.new(0, 8),
+        PaddingRight = UDim.new(0, 8),
+        Parent = frame,
+    })
+
+    local header = Create("TextLabel", {
+        Name = "Header",
+        BackgroundTransparency = 1,
+        LayoutOrder = 0,
+        Size = UDim2.new(1, 0, 0, 18),
+        Font = Enum.Font.Ubuntu,
+        Text = "Keybinds",
+        TextColor3 = theme.TitleText,
+        TextSize = 15,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = frame,
+    })
+    self:_track(header, "TextColor3", "TitleText")
+
+    self._keybindFrame = frame
+    return frame
+end
+
+function Window:_refreshKeybindList()
+    local frame = self:_ensureKeybindList()
+
+    for _, child in ipairs(frame:GetChildren()) do
+        if child.Name == "KeybindRow" then
+            child:Destroy()
+        end
+    end
+
+    for i, entry in ipairs(self._keybindEntries or {}) do
+        local row = Create("TextLabel", {
+            Name = "KeybindRow",
+            BackgroundTransparency = 1,
+            LayoutOrder = i,
+            Size = UDim2.new(1, 0, 0, 16),
+            FontFace = MakeFont("RobotoMono"),
+            Text = entry.title .. "  [" .. entry.get() .. "]",
+            TextColor3 = self._theme.SecondaryText,
+            TextSize = 13,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            TextTruncate = Enum.TextTruncate.AtEnd,
+            Parent = frame,
+        })
+        self:_track(row, "TextColor3", "SecondaryText")
+    end
+end
+
+function Window:SetKeybindListVisible(visible: boolean)
+    local frame = self:_ensureKeybindList()
+    if visible then
+        self:_refreshKeybindList()
+    end
+    frame.Visible = visible
+end
+
+function Window:_registerKeybindEntry(title: string, get: () -> string)
+    self._keybindEntries = self._keybindEntries or {}
+    local entry = { title = title, get = get }
+    table.insert(self._keybindEntries, entry)
+    if self._keybindFrame and self._keybindFrame.Visible then
+        self:_refreshKeybindList()
+    end
+    return entry
 end
 
 local function BuildHolder(window, parent: Instance, theme, height: number, withGradient: boolean)
@@ -1595,6 +1909,7 @@ function Category:AddButton(config: {
         Parent = info,
     })
     Create("UIPadding", { PaddingRight = UDim.new(0, 8), Parent = info })
+	self._window:_track(icon, "ImageColor3", "IconColor")
 
     local button = Create("TextButton", {
         Name = "Button",
@@ -1610,7 +1925,6 @@ function Category:AddButton(config: {
     WireClick(self._window, button, bg)
 
     button.MouseButton1Click:Connect(function()
-        -- ikon minik bir punch yapsin
         TweenService:Create(icon, TweenInfo.new(0.07, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
             Size = UDim2.fromOffset(18, 18),
         }):Play()
@@ -1663,13 +1977,15 @@ function Category:AddToggle(config: {
     Description: string?,
     Default: boolean?,
     Group: string?,
+    Flag: string?,
     Tooltip: string?,
     Callback: ((value: boolean) -> ())?,
     })
-    local theme = self._window._theme
-    local holder, bg = BuildHolder(self._window, self.ContainerScroll, theme, 45, true)
+    local window = self._window
+    local theme = window._theme
+    local holder, bg = BuildHolder(window, self.ContainerScroll, theme, 45, true)
 
-    local titleLabel, descLabel = BuildInfo(self._window, holder, theme, config.Title or "Toggle", config.Description)
+    local titleLabel, descLabel = BuildInfo(window, holder, theme, config.Title or "Toggle", config.Description)
 
     local toggleFrame = Create("Frame", {
         Name = "ToggleFrame",
@@ -1715,8 +2031,8 @@ function Category:AddToggle(config: {
     })
     ApplyCorner(knob, 999)
     local knobStroke = Create("UIStroke", { Color = theme.Stroke, Transparency = 0.93, Parent = knob })
-    self._window:_track(toggleStroke, "Color", "Stroke")
-    self._window:_track(knobStroke, "Color", "Stroke")
+    window:_track(toggleStroke, "Color", "Stroke")
+    window:_track(knobStroke, "Color", "Stroke")
 
     local button = Create("TextButton", {
         Name = "Button",
@@ -1728,13 +2044,13 @@ function Category:AddToggle(config: {
         Parent = holder,
     })
 
-    WireHover(self._window, holder, bg)
+    WireHover(window, holder, bg)
 
     local state = false
 
     local function visualUpdate(animate: boolean)
         local info = animate and MEDIUM or TweenInfo.new(0)
-        local t = self._window._theme -- her zaman guncel temayi oku
+        local t = window._theme
         if state then
             TweenService:Create(toggle, info, {
                 BackgroundTransparency = 0,
@@ -1755,6 +2071,10 @@ function Category:AddToggle(config: {
         end
     end
 
+    window:_onThemeChanged(holder, function()
+        visualUpdate(false)
+    end)
+
     local api = {}
 
     function api:Set(value: boolean, silent: boolean?)
@@ -1763,7 +2083,7 @@ function Category:AddToggle(config: {
         visualUpdate(true)
 
         if config.Group and value then
-            local group = self._window:_getToggleGroup(config.Group)
+            local group = window:_getToggleGroup(config.Group)
             for _, other in ipairs(group) do
                 if other ~= api and other:Get() then
                     other:Set(false)
@@ -1786,7 +2106,9 @@ function Category:AddToggle(config: {
     function api:Destroy() holder:Destroy() end
     api._holder = holder
     api._searchTitle = config.Title or "Toggle"
-    api._window = self._window
+    api._window = window
+    api._flag = config.Flag
+    api._configKind = "toggle"
 
     toggle.MouseEnter:Connect(function()
         TweenService:Create(toggleStroke, FAST, { Transparency = 0.8 }):Play()
@@ -1799,11 +2121,11 @@ function Category:AddToggle(config: {
     end)
 
     if config.Group then
-        table.insert(self._window:_getToggleGroup(config.Group), api)
+        table.insert(window:_getToggleGroup(config.Group), api)
     end
 
     if config.Tooltip then
-        self._window:AttachTooltip(holder, config.Tooltip)
+        window:AttachTooltip(holder, config.Tooltip)
     end
 
     if config.Default then
@@ -2379,14 +2701,16 @@ function Category:AddKeybind(config: {
     Title: string?,
     Description: string?,
     Default: Enum.KeyCode?,
+    Flag: string?,
     Tooltip: string?,
     Callback: ((key: Enum.KeyCode) -> ())?,
     ChangedCallback: ((key: Enum.KeyCode) -> ())?,
     })
-    local theme = self._window._theme
-    local holder, bg = BuildHolder(self._window, self.ContainerScroll, theme, 45, true)
+    local window = self._window
+    local theme = window._theme
+    local holder, bg = BuildHolder(window, self.ContainerScroll, theme, 45, true)
 
-    local titleLabel, descLabel = BuildInfo(self._window, holder, theme, config.Title or "Keybind", config.Description)
+    local titleLabel, descLabel = BuildInfo(window, holder, theme, config.Title or "Keybind", config.Description)
 
     local keybindFrame = Create("Frame", {
         Name = "KeybindFrame",
@@ -2408,7 +2732,7 @@ function Category:AddKeybind(config: {
     })
     ApplyCorner(keybind, 4)
     local keybindStroke = Create("UIStroke", { Color = theme.Stroke, Transparency = 0.93, Parent = keybind })
-    self._window:_track(keybindStroke, "Color", "Stroke")
+    window:_track(keybindStroke, "Color", "Stroke")
 
     local setBtn = Create("TextButton", {
         Name = "SetKeybindBtn",
@@ -2432,9 +2756,9 @@ function Category:AddKeybind(config: {
         PaddingRight = UDim.new(0, 4),
         Parent = setBtn,
     })
-    self._window:_track(setBtn, "TextColor3", "SecondaryText")
+    window:_track(setBtn, "TextColor3", "SecondaryText")
 
-    WireHover(self._window, holder, bg)
+    WireHover(window, holder, bg)
 
     local currentKey = config.Default or Enum.KeyCode.K
     local listening = false
@@ -2447,20 +2771,35 @@ function Category:AddKeybind(config: {
         setBtn.Text = listening and "..." or keyLabel(currentKey)
     end
 
+    local kbEntry = window:_registerKeybindEntry(config.Title or "Keybind", function()
+        return keyLabel(currentKey)
+    end)
+
     local api = {}
     function api:Set(key: Enum.KeyCode, silent: boolean?)
         currentKey = key
         updateVisual()
+        if window._keybindFrame and window._keybindFrame.Visible then
+            window:_refreshKeybindList()
+        end
         if not silent and config.ChangedCallback then
             task.spawn(config.ChangedCallback, key)
         end
     end
     function api:Get(): Enum.KeyCode return currentKey end
-    function api:SetTitle(t: string) titleLabel.Text = t end
+    function api:SetTitle(t: string)
+        titleLabel.Text = t
+        kbEntry.title = t
+        if window._keybindFrame and window._keybindFrame.Visible then
+            window:_refreshKeybindList()
+        end
+    end
     function api:SetDescription(d: string) descLabel.Text = d end
     function api:SetVisible(v: boolean) holder.Visible = v end
     api._holder = holder
     api._searchTitle = config.Title or "Keybind"
+    api._flag = config.Flag
+    api._configKind = "keybind"
 
     setBtn.MouseButton1Click:Connect(function()
         listening = true
@@ -2488,11 +2827,19 @@ function Category:AddKeybind(config: {
 
     function api:Destroy()
         inputConn:Disconnect()
+        if window._keybindEntries then
+            for i, e in ipairs(window._keybindEntries) do
+                if e == kbEntry then
+                    table.remove(window._keybindEntries, i)
+                    break
+                end
+            end
+        end
         holder:Destroy()
     end
 
     if config.Tooltip then
-        self._window:AttachTooltip(holder, config.Tooltip)
+        window:AttachTooltip(holder, config.Tooltip)
     end
 
     updateVisual()
@@ -2605,6 +2952,7 @@ function Category:AddDropdown(config: {
         Image = ResolveIcon(10709790948),
         Parent = collapseHolder,
     })
+	window:_track(collapseArrow, "ImageColor3", "IconColor")
 
     local topClick = Create("TextButton", {
         Name = "TopClick",
@@ -2646,7 +2994,7 @@ function Category:AddDropdown(config: {
             PaddingLeft = UDim.new(0, 5), PaddingRight = UDim.new(0, 22),
             Parent = searchHolder,
         })
-        Create("ImageLabel", {
+        local searchIcon = Create("ImageLabel", {
             Name = "DropdownSearchIcon",
             AnchorPoint = Vector2.new(0, 0.5),
             BackgroundTransparency = 1,
@@ -2655,6 +3003,7 @@ function Category:AddDropdown(config: {
             Image = ResolveIcon(10734943674),
             Parent = searchHolder,
         })
+		window:_track(searchIcon, "ImageColor3", "IconColor")
         searchInput = Create("TextBox", {
             Name = "DropdownSearchInput",
             BackgroundTransparency = 1,
@@ -2680,6 +3029,7 @@ function Category:AddDropdown(config: {
             Image = ResolveIcon(10723346158),
             Parent = searchHolder,
         })
+		window:_track(clearBtn, "ImageColor3", "IconColor")
     end
 
     -- separator line under search / topbar
@@ -2772,7 +3122,7 @@ function Category:AddDropdown(config: {
     -- styles a single option button by its state, fully theme-aware.
     -- selected/hover colors are derived live from the current accent,
     -- so every theme preset automatically looks right.
-    local function styleOption(opt, animate: boolean)
+        local function styleOption(opt, animate: boolean)
         local t = window._theme
         local info = animate and MEDIUM or TweenInfo.new(0)
         local sel = isSelected(opt.value)
@@ -2809,15 +3159,16 @@ function Category:AddDropdown(config: {
         end
         TweenService:Create(opt.holder, info, { BackgroundTransparency = bgTransparency }):Play()
 
-        opt.stroke.Color = sel and t.Accent or t.Stroke
-        TweenService:Create(opt.stroke, info, { Transparency = sel and 0.2 or 0.9 }):Play()
+        TweenService:Create(opt.stroke, info, {
+            Color = sel and t.Accent or t.Stroke,
+            Transparency = sel and 0.2 or 0.9,
+        }):Play()
 
         opt.bg.ImageColor3 = t.HoverColor
         TweenService:Create(opt.bg, info, {
             ImageTransparency = (sel or opt.hovered) and t.HoverTransparency or 1,
         }):Play()
     end
-
     local api = {}
 
     local function fireCallback()
@@ -2835,15 +3186,11 @@ function Category:AddDropdown(config: {
         end
     end
 
-    local function selectValue(v: string, silent: boolean?)
+        local function selectValue(v: string, silent: boolean?)
         if multi then
             selected[v] = not selected[v] or nil
         else
             selected = { [v] = true }
-            if expanded then
-                expanded = false
-                refreshSize()
-            end
         end
         for _, opt in ipairs(optionButtons) do
             styleOption(opt, true)
@@ -3124,6 +3471,7 @@ function Category:AddColorPicker(config: {
 		Image = ResolveIcon(10709790948),
 		Parent = topBar,
 	})
+	self._window:_track(collapseArrow, "ImageColor3", "IconColor")
 
 	local topClick = Create("TextButton", {
 		Name = "TopClick",
@@ -3901,6 +4249,7 @@ function Nexo.CreateWindow(config: {
 		Image = ResolveIcon(config.Icon or 10747373176),
 		Parent = topbar,
 	})
+	self_win:_track(logo, "ImageColor3", "IconColor")
 
 	local titleLabel = Create("TextLabel", {
 		Name = "Title",
@@ -3953,6 +4302,7 @@ function Nexo.CreateWindow(config: {
 		Image = ResolveIcon(10734950309),
 		Parent = topbar,
 	})
+	self_win:_track(settingsBtn, "ImageColor3", "IconColor")
 
 	-- container
 	local container = Create("Frame", {
@@ -4062,7 +4412,7 @@ function Nexo.CreateWindow(config: {
         PaddingRight = UDim.new(0, 22),
         Parent = searchHolder,
     })
-    Create("ImageLabel", {
+    local mainSearchIcon = Create("ImageLabel", {
         Name = "SearchIcon",
         AnchorPoint = Vector2.new(0, 0.5),
         BackgroundTransparency = 1,
@@ -4071,6 +4421,8 @@ function Nexo.CreateWindow(config: {
         Image = ResolveIcon(10734943674),
         Parent = searchHolder,
     })
+	self_win:_track(mainSearchIcon, "ImageColor3", "IconColor")
+	
     local searchInput = Create("TextBox", {
         Name = "SearchInput",
         BackgroundTransparency = 1,
@@ -4087,7 +4439,7 @@ function Nexo.CreateWindow(config: {
     })
     self_win:_track(searchInput, "TextColor3", "PrimaryText")
     self_win:_track(searchInput, "PlaceholderColor3", "SecondaryText")
-    Create("ImageButton", {
+    local mainClearBtn = Create("ImageButton", {
         Name = "ClearBtn",
         AnchorPoint = Vector2.new(0, 0.5),
         BackgroundTransparency = 1,
@@ -4096,6 +4448,7 @@ function Nexo.CreateWindow(config: {
         Image = ResolveIcon(10723346158),
         Parent = searchHolder,
     })
+	self_win:_track(mainClearBtn, "ImageColor3", "IconColor")
 
 	local tabHolder = Create("Frame", {
 		Name = "TabHolder",
@@ -4390,6 +4743,190 @@ function Nexo.CreateWindow(config: {
         self_win:UnloadGui()
     end,
 	})
+
+	    behaviorCat:AddToggle({
+        Title = "Keybind List",
+        Description = "Show active keybinds on screen",
+        Default = false,
+        Callback = function(v)
+            self_win:SetKeybindListVisible(v)
+        end,
+    })
+
+    -- config menu
+    local configCat = settingsTab:AddCategory({ Title = "Configs", Icon = "save", Side = "Right" })
+
+    local configNameInput = configCat:AddInput({
+        Title = "Config Name",
+        Description = "Name for save/load",
+        Placeholder = "my-config",
+    })
+
+    local configDropdown
+    local function refreshConfigList()
+        if configDropdown then
+            configDropdown:Destroy()
+        end
+        configDropdown = configCat:AddDropdown({
+            Title = "Saved Configs",
+            Description = "Pick one, then press Load Selected",
+            Values = self_win:GetConfigs(),
+            Searchable = false,
+            Callback = function(name)
+                if name then
+                    configNameInput:Set(name, true)
+                end
+            end,
+        })
+    end
+
+    configCat:AddButton({
+        Title = "Save Config",
+        Description = "Saves all flagged values",
+        Icon = "save",
+        Callback = function()
+            if self_win:SaveConfig(configNameInput:Get()) then
+                refreshConfigList()
+            end
+        end,
+    })
+
+    configCat:AddButton({
+        Title = "Load Config",
+        Description = "Loads config by name",
+        Icon = "folder-open",
+        Callback = function()
+            self_win:LoadConfig(configNameInput:Get())
+        end,
+    })
+
+    configCat:AddButton({
+        Title = "Refresh List",
+        Description = "Re-scan saved configs",
+        Icon = "refresh-cw",
+        Callback = function()
+            refreshConfigList()
+            self_win:Notify({ Title = "Config", Content = "List refreshed.", Duration = 2 })
+        end,
+    })
+
+    configCat:AddSeparator({ Text = "JSON" })
+
+    local jsonInput = configCat:AddInput({
+        Title = "JSON Data",
+        Description = "Paste config JSON here",
+        Placeholder = "{...}",
+    })
+
+    configCat:AddButton({
+        Title = "Import JSON",
+        Description = "Applies pasted JSON config",
+        Icon = "download",
+        Callback = function()
+            self_win:ImportConfig(jsonInput:Get())
+        end,
+    })
+
+    configCat:AddButton({
+        Title = "Export JSON",
+        Description = "Copies config to clipboard",
+        Icon = "upload",
+        Callback = function()
+            local json = self_win:ExportConfig()
+            if typeof(setclipboard) == "function" then
+                setclipboard(json)
+                self_win:Notify({ Title = "Config", Content = "Copied to clipboard.", Duration = 3 })
+            else
+                jsonInput:Set(json, true)
+                self_win:Notify({ Title = "Config", Content = "No clipboard access, JSON put into the input box.", Duration = 4 })
+            end
+        end,
+    })
+
+    refreshConfigList()
+
+    -- custom theme menu
+    local customThemeCat = settingsTab:AddCategory({ Title = "Custom Theme", Icon = "brush", Side = "Left" })
+
+    customThemeCat:AddColorPicker({
+        Title = "Window Background",
+        Default = self_win._theme.WindowBackground,
+        Callback = function(c) self_win:SetThemeColor("WindowBackground", c) end,
+    })
+    customThemeCat:AddColorPicker({
+        Title = "Category Background",
+        Default = self_win._theme.CategoryBackground,
+        Callback = function(c)
+            self_win:SetThemeColor("CategoryBackground", c)
+            self_win:SetThemeColor("CategoryTopBar", c:Lerp(Color3.new(1, 1, 1), 0.12))
+        end,
+    })
+    customThemeCat:AddColorPicker({
+        Title = "Gradient Top",
+        Default = self_win._theme.GradientTop,
+        Callback = function(c) self_win:SetThemeColor("GradientTop", c) end,
+    })
+    customThemeCat:AddColorPicker({
+        Title = "Gradient Bottom",
+        Default = self_win._theme.GradientBottom,
+        Callback = function(c) self_win:SetThemeColor("GradientBottom", c) end,
+    })
+    customThemeCat:AddColorPicker({
+        Title = "Primary Text",
+        Default = self_win._theme.PrimaryText,
+        Callback = function(c) self_win:SetThemeColor("PrimaryText", c) end,
+    })
+    customThemeCat:AddColorPicker({
+        Title = "Secondary Text",
+        Default = self_win._theme.SecondaryText,
+        Callback = function(c) self_win:SetThemeColor("SecondaryText", c) end,
+    })
+    customThemeCat:AddColorPicker({
+        Title = "Toggle Active",
+        Default = self_win._theme.ToggleActive,
+        Callback = function(c) self_win:SetThemeColor("ToggleActive", c) end,
+    })
+    customThemeCat:AddSlider({
+        Title = "Holder Opacity",
+        Description = "Component background visibility",
+        Min = 0, Max = 100,
+        Default = math.floor((1 - self_win._theme.HolderTransparency) * 100 + 0.5),
+        Suffix = "%",
+        Callback = function(v)
+            self_win._theme.HolderTransparency = 1 - (v / 100)
+            self_win:ApplyTheme()
+        end,
+    })
+
+    customThemeCat:AddSeparator({ Text = "Share" })
+
+    local themeJsonInput = customThemeCat:AddInput({
+        Title = "Theme JSON",
+        Description = "Paste a theme here",
+        Placeholder = "{...}",
+    })
+    customThemeCat:AddButton({
+        Title = "Import Theme",
+        Icon = "download",
+        Callback = function()
+            self_win:ImportTheme(themeJsonInput:Get())
+        end,
+    })
+    customThemeCat:AddButton({
+        Title = "Export Theme",
+        Description = "Copies current theme to clipboard",
+        Icon = "upload",
+        Callback = function()
+            local json = self_win:ExportTheme()
+            if typeof(setclipboard) == "function" then
+                setclipboard(json)
+                self_win:Notify({ Title = "Theme", Content = "Copied to clipboard.", Duration = 3 })
+            else
+                themeJsonInput:Set(json, true)
+                self_win:Notify({ Title = "Theme", Content = "No clipboard access, JSON put into the input box.", Duration = 4 })
+            end
+        end,
+    })
 
 	self_win.GetSettingsTab = function()
 		return settingsTab
