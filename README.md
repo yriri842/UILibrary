@@ -7,7 +7,7 @@ A UI library for Roblox scripts. Single file, no dependencies. Comes with a buil
 ## Getting started
 
 ```lua
-local Nexo = loadstring(game:HttpGet("YOUR_RAW_URL_HERE"))()
+local Nexo = loadstring(game:HttpGet("https://raw.githubusercontent.com/yriri842/UILibrary/refs/heads/main/library.lua"))()
 
 local Window = Nexo.CreateWindow({
     Title = "My Script",
